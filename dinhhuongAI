@@ -1,0 +1,94 @@
+🎯 PHÁT TRIỂN MODULE AI FACE RECOGNITION 😄🔥
+Hiện tại backend Spring Boot sẽ được phát triển riêng 😄👍
+Nên trước mắt hãy xây dựng AI module độc lập cho mobile app 😄🔥
+Chương 1. ==================================================
+📌 MỤC TIÊU 😄🔥
+Xây dựng AI module cho:
+•	Face Detection
+•	Face Registration
+•	Face Verification
+Dùng cho hệ thống:
+Smart Dormitory Security System 😄🔥
+Chương 2. ==================================================
+📌 YÊU CẦU VERSION 1 😄🔥
+PHASE 1 — FACE DETECTION
+•	Mở camera realtime
+•	Detect khuôn mặt
+•	Vẽ bounding box
+•	Tracking realtime
+PHASE 2 — FACE REGISTRATION
+•	Chụp khuôn mặt sinh viên
+•	Extract face embedding/vector
+•	Lưu local/mock database
+PHASE 3 — FACE VERIFICATION
+•	So sánh khuôn mặt hiện tại với khuôn mặt đã đăng ký
+•	Trả về:
+o	matched/unmatched
+o	confidence score
+PHASE 4 — API READY
+Chuẩn bị sẵn architecture để sau này connect Spring Boot API.
+Chương 3. ==================================================
+📌 TECH GỢI Ý 😄🔥
+MOBILE
+•	Flutter hoặc React Native
+AI/FACE
+•	ML Kit
+•	MediaPipe
+•	OpenCV
+•	TensorFlow Lite (future)
+Chương 4. ==================================================
+📌 FLOW 😄🔥
+Camera
+↓
+Detect face
+↓
+Extract embedding
+↓
+Register face
+↓
+Verify face
+↓
+Return confidence result
+Chương 5. ==================================================
+📌 OUTPUT MONG MUỐN 😄🔥
+Ví dụ:
+Matched 😄🔥
+Confidence: 94%
+hoặc:
+Face not recognized 😄❌
+Chương 6. ==================================================
+📌 LƯU Ý 😄🔥
+Hiện tại:
+•	chưa cần backend thật
+•	chưa cần MQTT
+•	chưa cần ESP32
+•	chưa cần smart lock
+Chỉ cần:
+•	AI hoạt động độc lập
+•	Detect + Register + Verify hoạt động ổn định
+Chương 7. ==================================================
+📌 BACKEND TƯƠNG LAI 😄🔥
+Sau này AI module sẽ connect tới:
+Spring Boot REST API
+Ví dụ:
+POST /api/face/register
+POST /api/face/verify
+Chương 8. ==================================================
+📌 KIẾN TRÚC TƯƠNG LAI 😄🔥
+Mobile App + AI
+↓
+Spring Boot Backend
+↓
+MQTT / Database
+↓
+ESP32 / Smart Door
+Chương 9. ==================================================
+🎯 MỤC TIÊU HIỆN TẠI 😄🔥
+Hoàn thành AI module độc lập gồm:
+1.	Camera integration
+2.	Face detection
+3.	Face registration
+4.	Face verification
+5.	Confidence scoring
+Sau đó mới integrate backend 😄👍
+

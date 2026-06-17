@@ -1,0 +1,192 @@
+User Module API Documentation
+Base URL
+/api/users
+Authentication
+Tất cả API yêu cầu JWT Token.
+Authorization: Bearer <access_token>
+Role yêu cầu:
+ROLE_USER
+
+1. Get My Profile
+Lấy thông tin hồ sơ của sinh viên đang đăng nhập.
+Endpoint
+GET /api/users/me
+Authorization
+ROLE_USER
+
+Request Header
+Authorization: Bearer <token>
+
+Response Success
+Status Code
+200 OK
+Response Body
+{
+  "success": true,
+  "message": "Get profile successfully",
+  "data": {
+    "id": 1,
+    "username": "student01",
+    "role": "USER",
+    "studentCode": "SV001",
+    "fullName": "Nguyễn Văn A",
+    "cccd": "079204005678",
+    "gender": "MALE",
+    "dateOfBirth": "2004-01-15",
+    "phone": "0912345678",
+    "email": "vana@example.com",
+    "faculty": "Information Technology",
+    "course": "K20",
+    "avatarUrl": "https://res.cloudinary.com/avatar.jpg"
+  }
+}
+
+Error Responses
+Unauthorized
+401 Unauthorized
+{
+  "success": false,
+  "message": "Unauthorized"
+}
+Student Profile Not Found
+404 Not Found
+{
+  "success": false,
+  "message": "Student profile not found"
+}
+
+2. Update Profile
+Cập nhật thông tin cá nhân sinh viên.
+Endpoint
+PUT /api/users/me
+Authorization
+ROLE_USER
+
+Request Header
+Authorization: Bearer <token>
+Content-Type: application/json
+
+Request Body
+Example
+{
+  "fullName": "Nguyễn Văn B",
+  "phone": "0987654321",
+  "email": "vanb@example.com"
+}
+
+Validation Rules
+Field	Type	Required	Validation
+fullName	String	No	Nếu gửi thì không được rỗng
+phone	String	No	Đúng định dạng số điện thoại VN
+email	String	No	Đúng định dạng email
+
+Phone Regex
+(84|0[3|5|7|8|9])+([0-9]{8})
+
+Response Success
+Status Code
+200 OK
+Response Body
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": null
+}
+
+Error Responses
+Invalid Phone Number
+400 Bad Request
+{
+  "success": false,
+  "message": "Invalid phone number"
+}
+Invalid Email
+400 Bad Request
+{
+  "success": false,
+  "message": "Invalid email"
+}
+Email Already Exists
+400 Bad Request
+{
+  "success": false,
+  "message": "Email already exists"
+}
+Student Not Found
+404 Not Found
+{
+  "success": false,
+  "message": "Student not found"
+}
+
+3. Upload Avatar
+Upload ảnh đại diện sinh viên.
+Endpoint
+POST /api/users/me/avatar
+Authorization
+ROLE_USER
+Content Type
+multipart/form-data
+
+Request Header
+Authorization: Bearer <token>
+
+Form Data
+Key	Type	Required	Description
+file	MultipartFile	Yes	File ảnh avatar
+
+Example Request
+form-data
+KEY	VALUE	TYPE
+file	avatar.png	File
+
+Response Success
+Status Code
+200 OK
+Response Body
+{
+  "success": true,
+  "message": "Avatar updated successfully",
+  "data": "https://res.cloudinary.com/dormitory/avatar.jpg"
+}
+
+Error Responses
+No File Uploaded
+400 Bad Request
+{
+  "success": false,
+  "message": "No file uploaded"
+}
+Student Not Found
+404 Not Found
+{
+  "success": false,
+  "message": "Student not found"
+}
+Upload Failed
+500 Internal Server Error
+{
+  "success": false,
+  "message": "Failed to upload avatar"
+}
+
+Entity: Student
+Field	Type	Constraint
+id	Long	Primary Key
+studentCode	String	Unique
+avatarUrl	String	Nullable
+fullName	String
+cccd	String	Unique, Not Null
+dateOfBirth	LocalDate
+gender	ENUM	Not Null
+phone	String
+email	String	Unique
+faculty	String
+course	String
+
+Notes
+API sử dụng JWT Authentication.
+Avatar upload bằng Cloudinary.
+CCCD là định danh duy nhất của sinh viên.
+Email phải unique trong hệ thống.
+Chỉ tài khoản có role USER mới được truy cập API.
