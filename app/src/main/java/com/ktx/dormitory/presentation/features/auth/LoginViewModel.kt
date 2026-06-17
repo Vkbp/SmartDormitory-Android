@@ -65,7 +65,7 @@ open class LoginViewModel @Inject constructor(
     }
 
     open fun performLogin(
-        username: String,
+        usernameOrEmail: String,
         password: String,
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
@@ -75,7 +75,7 @@ open class LoginViewModel @Inject constructor(
         _uiState.update { it.copy(mssvError = null, passwordError = null, error = null) }
 
         var isValid = true
-        if (username.isBlank()) {
+        if (usernameOrEmail.isBlank()) {
             mssvError = "MSSV hoặc Email không được để trống"
             _uiState.update { it.copy(mssvError = "MSSV hoặc Email không được để trống") }
             isValid = false
@@ -90,12 +90,12 @@ open class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             updateLoading(true)
-            val result = authRepository.login(username, password)
+            val result = authRepository.login(usernameOrEmail, password)
             
             if (result.isSuccess) {
                 val data = result.getOrNull()!!
                 userRepository.saveLoginStatus(true)
-                val user = UserData(username, data.role, "")
+                val user = UserData(usernameOrEmail, data.role, "")
                 _userData.value = user
                 _uiState.update { it.copy(isLoading = false, userData = user) }
                 this@LoginViewModel.isLoading = false
@@ -164,6 +164,19 @@ open class LoginViewModel @Inject constructor(
             }.onFailure {
                 updateLoading(false)
                 onError(it.message ?: "Lỗi")
+            }
+        }
+    }
+
+    open fun resetPassword(token: String, newPass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            updateLoading(true)
+            authRepository.resetPassword(token, newPass).onSuccess {
+                updateLoading(false)
+                onSuccess()
+            }.onFailure {
+                updateLoading(false)
+                onError(it.message ?: "Lỗi đặt lại mật khẩu")
             }
         }
     }

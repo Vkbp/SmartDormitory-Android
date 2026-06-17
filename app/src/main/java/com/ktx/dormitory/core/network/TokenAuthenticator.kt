@@ -2,7 +2,7 @@ package com.ktx.dormitory.core.network
 
 import com.ktx.dormitory.data.api.AuthApiService
 import com.ktx.dormitory.data.local.TokenManager
-import com.ktx.dormitory.domain.model.RefreshRequest
+import com.ktx.dormitory.domain.model.RefreshTokenRequest
 import com.ktx.dormitory.domain.repository.UserRepository
 import com.ktx.dormitory.util.AuthEvent
 import com.ktx.dormitory.util.AuthEventBus
@@ -52,7 +52,7 @@ class TokenAuthenticator @Inject constructor(
                     // Refresh token là IO operation, vẫn cần runBlocking trong Authenticator 
                     // nhưng đã giảm thiểu việc đọc Flow không cần thiết.
                     val refreshRes = runBlocking {
-                        apiHolder.get().refreshToken(RefreshRequest(refreshToken))
+                        apiHolder.get().refreshToken(RefreshTokenRequest(refreshToken))
                     }
 
                     if (refreshRes.success && refreshRes.data != null) {

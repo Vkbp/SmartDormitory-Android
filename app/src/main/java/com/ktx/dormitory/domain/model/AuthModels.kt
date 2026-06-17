@@ -9,17 +9,21 @@ data class BaseResponse<T>(
     val data: T?
 )
 
-// Dữ liệu Login (Chương 10)
-data class LoginRequest(val username: String, val password: String)
+// Dữ liệu Login (Chương 10) - Đã chuẩn hóa theo API Doc
+data class LoginRequest(
+    @SerializedName("usernameOrEmail") val usernameOrEmail: String, 
+    val password: String
+)
 
 data class LoginResponse(
     val accessToken: String,
     val refreshToken: String,
+    val tokenType: String = "Bearer",
     val role: String
 )
 
-// Dữ liệu Refresh Token (Chương 13)
-data class RefreshRequest(val refreshToken: String)
+// Dữ liệu Refresh Token (Chương 13) - Đã chuẩn hóa naming theo API Doc
+data class RefreshTokenRequest(val refreshToken: String)
 
 // Đảm bảo class UserData có đầy đủ các trường này
 data class UserData(
@@ -39,4 +43,8 @@ data class ForgotPasswordRequest(
     val email: String
 )
 
-
+// Dữ liệu cho đặt lại mật khẩu (Mới bổ sung theo API Doc)
+data class ResetPasswordRequest(
+    val token: String,
+    val newPassword: String
+)

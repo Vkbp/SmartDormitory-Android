@@ -6,10 +6,13 @@ import retrofit2.http.GET
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
+/**
+ * Đã chuẩn hóa Endpoint theo v1/
+ */
 interface NotificationApiService {
-    @GET("notifications")
+    @GET("v1/notifications")
     suspend fun getNotifications(): BaseResponse<List<Notification>>
 
-    @PUT("notifications/{id}/read")
+    @PUT("v1/notifications/{id}/read")
     suspend fun markAsRead(@Path("id") id: String): BaseResponse<Unit>
 }

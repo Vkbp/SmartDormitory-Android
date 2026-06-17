@@ -3,23 +3,34 @@ package com.ktx.dormitory.domain.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * 1. Hồ sơ người dùng chi tiết (Khớp Spec 4 - Profile)
+ * 1. Hồ sơ người dùng chi tiết (Đã bổ sung đầy đủ các trường theo API_DOCUMENTATION.md)
  */
 data class UserProfile(
-    @SerializedName("id") val id: Long? = null,
-    @SerializedName("username") val username: String? = null,
-    @SerializedName("studentCode", alternate = ["student_code"]) val studentCode: String? = null,
-    @SerializedName("fullName", alternate = ["full_name"]) val fullName: String? = null,
-    @SerializedName("cccd") val cccd: String? = null,
-    @SerializedName("gender") val gender: String? = null,
-    @SerializedName("birthDate", alternate = ["date_of_birth", "birth_date"]) val birthDate: String? = null,
-    @SerializedName("faculty") val faculty: String? = null,
-    @SerializedName("course") val course: String? = null,
-    @SerializedName("phone") val phone: String? = null,
+    @SerializedName("studentId") val id: String? = null,
+    @SerializedName("studentCode") val studentCode: String? = null,
+    @SerializedName("fullName") val fullName: String? = null,
+    @SerializedName("cccd") val citizenId: String? = null,
     @SerializedName("email") val email: String? = null,
-    @SerializedName("address") val address: String? = null,
-    @SerializedName("role") val role: String? = null,
-    @SerializedName("avatarUrl", alternate = ["avatar_url"]) val avatarUrl: String? = null
+    @SerializedName("phone") val phone: String? = null,
+    @SerializedName("faculty") val faculty: String? = null,
+    @SerializedName("academicYear") val academicYear: String? = null,
+    
+    // Các trường thông tin gia đình và liên hệ khẩn cấp (Mới bổ sung)
+    @SerializedName("fatherName") val fatherName: String? = null,
+    @SerializedName("fatherPhone") val fatherPhone: String? = null,
+    @SerializedName("motherName") val motherName: String? = null,
+    @SerializedName("motherPhone") val motherPhone: String? = null,
+    @SerializedName("emergencyContact") val emergencyContact: String? = null,
+    @SerializedName("permanentAddress") val permanentAddress: String? = null,
+    
+    @SerializedName("avatarUrl") val avatarUrl: String? = null,
+    @SerializedName("status") val status: String? = null,
+    
+    // Các trường cũ để đảm bảo tương thích
+    @SerializedName("gender") val gender: String? = null,
+    @SerializedName("birthDate") val birthDate: String? = null,
+    @SerializedName("course") val course: String? = null,
+    @SerializedName("role") val role: String? = null
 )
 
 /**
@@ -34,14 +45,14 @@ data class RoomInfo(
 )
 
 /**
- * 3. Giao dịch thanh toán (Khớp Spec 3 - Payments)
+ * 3. Giao dịch thanh toán
  */
 data class Transaction(
     @SerializedName("transaction_id") val transactionId: String?,
     @SerializedName("amount") val amount: Double?,
-    @SerializedName("payment_method") val method: String?, // Khớp payment_method
+    @SerializedName("payment_method") val method: String?,
     @SerializedName("status") val status: String?,
-    @SerializedName("created_at") val createdAt: String?, // Khớp created_at ISO
+    @SerializedName("created_at") val createdAt: String?,
     @SerializedName("type") val type: String? = null,
     @SerializedName("message") val message: String? = null
 )
@@ -68,11 +79,16 @@ enum class AppStepStatus {
 }
 
 /**
- * 4. Yêu cầu cập nhật hồ sơ
+ * 4. Yêu cầu cập nhật hồ sơ (Đã bổ sung đầy đủ theo API_DOCUMENTATION.md)
  */
 data class UpdateProfileRequest(
-    @SerializedName("fullName", alternate = ["full_name"]) val fullName: String?,
-    @SerializedName("phone") val phone: String?,
-    @SerializedName("email") val email: String?,
-    @SerializedName("address") val address: String? = null
+    @SerializedName("email") val email: String? = null,
+    @SerializedName("phone") val phone: String? = null,
+    @SerializedName("fatherName") val fatherName: String? = null,
+    @SerializedName("fatherPhone") val fatherPhone: String? = null,
+    @SerializedName("motherName") val motherName: String? = null,
+    @SerializedName("motherPhone") val motherPhone: String? = null,
+    @SerializedName("emergencyContact") val emergencyContact: String? = null,
+    @SerializedName("permanentAddress") val permanentAddress: String? = null,
+    @SerializedName("avatarUrl") val avatarUrl: String? = null
 )

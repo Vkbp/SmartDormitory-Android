@@ -6,19 +6,20 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
+/**
+ * Đã chuẩn hóa Endpoint theo v1/
+ */
 interface AccessApiService {
-    @POST("access/verify-qr")
+    @POST("v1/access/verify-qr")
     suspend fun verifyQr(@Body request: QrRequest): BaseResponse<Unit>
 
-    @GET("access/history")
+    @GET("v1/access/history")
     suspend fun getAccessHistory(): BaseResponse<List<AccessLog>>
 
-    // Gửi vector khuôn mặt lên Backend để cửa chính có thể nhận diện
-    @POST("access/face/register")
+    @POST("v1/access/face/register")
     suspend fun registerFaceOnServer(@Body request: FaceRegisterRequest): BaseResponse<Unit>
 
-    // Cho phép người quản lý mở cửa từ xa qua App
-    @POST("access/remote-unlock")
+    @POST("v1/access/remote-unlock")
     suspend fun remoteUnlock(@Body request: UnlockRequest): BaseResponse<Unit>
 }
 

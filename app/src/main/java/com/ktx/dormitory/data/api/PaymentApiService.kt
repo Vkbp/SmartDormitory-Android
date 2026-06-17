@@ -6,10 +6,13 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
+/**
+ * Đã chuẩn hóa Endpoint theo v1/
+ */
 interface PaymentApiService {
-    @GET("payments/invoices")
+    @GET("v1/payments/invoices")
     suspend fun getInvoices(): BaseResponse<List<Invoice>>
 
-    @POST("payments/verify/{invoiceId}")
+    @POST("v1/payments/verify/{invoiceId}")
     suspend fun verifyPayment(@Path("invoiceId") invoiceId: String): BaseResponse<Unit>
 }
