@@ -1,10 +1,14 @@
 package com.ktx.dormitory.data.local
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.ktx.dormitory.domain.model.AccessLog
 
-@Entity(tableName = "access_logs")
+@Entity(
+    tableName = "access_logs",
+    indices = [Index(value = ["userId"]), Index(value = ["timestamp"])]
+)
 data class AccessLogEntity(
     @PrimaryKey val id: String,
     val userId: String,

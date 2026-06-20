@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ktx.dormitory.domain.model.RequestType
 import com.ktx.dormitory.presentation.features.request.RequestViewModel
@@ -27,13 +28,13 @@ fun QuickExtendScreen(
     var semesterCount by remember { mutableStateOf("1") }
     var note by remember { mutableStateOf("") }
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Theo dõi trạng thái thành công để quay lại màn hình trước
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
+    LaunchedEffect(uiState.submitSuccess) {
+        if (uiState.submitSuccess) {
             Toast.makeText(context, "Đã gửi yêu cầu gia hạn thành công!", Toast.LENGTH_SHORT).show()
-            viewModel.resetSuccess()
+            viewModel.clearStatus()
             navController.popBackStack()
         }
     }
@@ -100,10 +101,10 @@ fun QuickExtendScreen(
                     viewModel.submitRequest()
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading,
+                enabled = !uiState.isSubmitting,
                 shape = MaterialTheme.shapes.medium
             ) {
-                if (uiState.isLoading) {
+                if (uiState.isSubmitting) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                 } else {
                     Text("GỬI YÊU CẦU GIA HẠN")

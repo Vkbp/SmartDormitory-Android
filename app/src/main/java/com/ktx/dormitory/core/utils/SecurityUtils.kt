@@ -17,15 +17,10 @@ object SecurityUtils {
     fun getSecretKey(): SecretKey {
         val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
         keyStore.load(null)
-        
         val key = keyStore.getKey(KEY_ALIAS, null) as? SecretKey
         if (key != null) return key
-
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
-        val spec = KeyGenParameterSpec.Builder(
-            KEY_ALIAS,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        )
+        val spec = KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .build()
@@ -36,35 +31,23 @@ object SecurityUtils {
     fun encryptEmbedding(embedding: FloatArray): ByteArray {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
-        
         val byteBuffer = ByteBuffer.allocate(embedding.size * 4)
         embedding.forEach { byteBuffer.putFloat(it) }
-        
         val encryptedData = cipher.doFinal(byteBuffer.array())
         val iv = cipher.iv
-        
-        // Kết quả = IV (12 bytes) + Encrypted Data
-        return ByteBuffer.allocate(iv.size + encryptedData.size)
-            .put(iv)
-            .put(encryptedData)
-            .array()
+        return ByteBuffer.allocate(iv.size + encryptedData.size).put(iv).put(encryptedData).array()
     }
 
     fun decryptEmbedding(encrypted: ByteArray): FloatArray {
         val iv = encrypted.sliceArray(0 until 12)
         val data = encrypted.sliceArray(12 until encrypted.size)
-        
         val cipher = Cipher.getInstance(TRANSFORMATION)
         val spec = GCMParameterSpec(128, iv)
         cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
-        
         val decryptedData = cipher.doFinal(data)
         val byteBuffer = ByteBuffer.wrap(decryptedData)
-        
         val result = FloatArray(decryptedData.size / 4)
-        for (i in result.indices) {
-            result[i] = byteBuffer.float
-        }
+        for (i in result.indices) { result[i] = byteBuffer.float }
         return result
     }
 }

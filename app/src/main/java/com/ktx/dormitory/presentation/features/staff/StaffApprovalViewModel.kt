@@ -1,60 +1,70 @@
 package com.ktx.dormitory.presentation.features.staff
 
+import android.os.Parcelable
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ktx.dormitory.domain.model.DormRequest
 import com.ktx.dormitory.domain.model.RequestStatus
 import com.ktx.dormitory.domain.repository.RequestRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
+
+@Parcelize
+data class StaffApprovalUiState(
+    val requests: List<DormRequest> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+) : Parcelable
 
 @HiltViewModel
 class StaffApprovalViewModel @Inject constructor(
-    private val repository: RequestRepository
+    private val repository: RequestRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _requests = MutableStateFlow<List<DormRequest>>(emptyList())
-    val requests: StateFlow<List<DormRequest>> = _requests.asStateFlow()
+    val uiState: StateFlow<StaffApprovalUiState> = savedStateHandle.getStateFlow("uiState", StaffApprovalUiState())
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private fun updateUiState(reducer: (StaffApprovalUiState) -> StaffApprovalUiState) {
+        savedStateHandle["uiState"] = reducer(uiState.value)
+    }
 
     init {
-        fetchRequests()
+        if (uiState.value.requests.isEmpty()) {
+            fetchRequests()
+        }
     }
 
     fun fetchRequests() {
         viewModelScope.launch {
-            _isLoading.value = true
-            repository.getAllRequests()
-                .onSuccess { _requests.value = it }
-                .onFailure { _error.value = it.message }
-            _isLoading.value = false
+            updateUiState { it.copy(isLoading = true, error = null) }
+            repository.getPendingRequests()
+                .onSuccess { data -> 
+                    updateUiState { it.copy(isLoading = false, requests = data) } 
+                }
+                .onFailure { e -> 
+                    updateUiState { it.copy(isLoading = false, error = e.message) } 
+                }
         }
     }
 
     fun updateStatus(requestId: String, status: RequestStatus) {
         viewModelScope.launch {
-            _isLoading.value = true
+            updateUiState { it.copy(isLoading = true) }
             repository.updateRequestStatus(requestId, status)
                 .onSuccess {
                     fetchRequests() // Refresh list
                 }
-                .onFailure {
-                    _error.value = it.message
+                .onFailure { e ->
+                    updateUiState { it.copy(isLoading = false, error = e.message) }
                 }
-            _isLoading.value = false
         }
     }
 
     fun clearError() {
-        _error.value = null
+        updateUiState { it.copy(error = null) }
     }
 }

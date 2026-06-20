@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,7 +40,7 @@ fun PaymentScreen(
     viewModel: PaymentViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedInvoiceId by remember { mutableStateOf<Long?>(null) } // Đổi sang Long
+    var selectedInvoiceId by remember { mutableStateOf<Long?>(null) }
 
     if (selectedInvoiceId != null) {
         AlertDialog(
@@ -47,13 +48,19 @@ fun PaymentScreen(
             title = { Text("Xác nhận thanh toán") },
             text = { Text("Bạn có chắc chắn đã chuyển khoản cho hóa đơn này? Hành động này sẽ gửi yêu cầu đối soát tới ban quản lý.") },
             confirmButton = {
-                Button(onClick = {
-                    selectedInvoiceId?.let { viewModel.verifyPayment(it.toString()) }
-                    selectedInvoiceId = null
-                }) { Text("Xác nhận") }
+                Button(
+                    onClick = {
+                        selectedInvoiceId?.let { viewModel.verifyPayment(it.toString()) }
+                        selectedInvoiceId = null
+                    },
+                    modifier = Modifier.testTag("payment_confirm_dialog_confirm")
+                ) { Text("Xác nhận") }
             },
             dismissButton = {
-                TextButton(onClick = { selectedInvoiceId = null }) { Text("Hủy") }
+                TextButton(
+                    onClick = { selectedInvoiceId = null },
+                    modifier = Modifier.testTag("payment_confirm_dialog_cancel")
+                ) { Text("Hủy") }
             }
         )
     }
@@ -76,13 +83,14 @@ fun PaymentScreen(
     ) { padding ->
         Box(modifier = Modifier
             .padding(padding)
-            .fillMaxSize()) {
+            .fillMaxSize()
+            .testTag("payment_screen_container")) {
             when (val state = uiState) {
-                is PaymentUiState.Loading -> LoadingView()
-                is PaymentUiState.Error -> ErrorView(message = state.message, onRetry = { viewModel.loadInvoices() })
+                is PaymentUiState.Loading -> Box(Modifier.testTag("payment_loading_view")) { LoadingView() }
+                is PaymentUiState.Error -> Box(Modifier.testTag("payment_error_view")) { ErrorView(message = state.message, onRetry = { viewModel.loadInvoices() }) }
                 is PaymentUiState.Success -> {
                     if (state.invoices.isEmpty()) {
-                        EmptyView(message = "Không có hóa đơn nào cần thanh toán")
+                        Box(Modifier.testTag("payment_empty_view")) { EmptyView(message = "Không có hóa đơn nào cần thanh toán") }
                     } else {
                         PaymentContent(state) { selectedInvoiceId = it }
                     }
@@ -95,7 +103,7 @@ fun PaymentScreen(
 @Composable
 fun PaymentContent(state: PaymentUiState.Success, onInvoiceClick: (Long) -> Unit) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("payment_list"),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -131,7 +139,7 @@ fun InvoiceCard(invoice: Invoice, onVerify: () -> Unit) {
     val statusColor = if (invoice.status == PaymentStatus.PAID) Color(0xFF4CAF50) else Color(0xFFF44336)
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag("invoice_card_${invoice.id}"),
         elevation = CardDefaults.cardElevation(2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -144,7 +152,7 @@ fun InvoiceCard(invoice: Invoice, onVerify: () -> Unit) {
                     InvoiceType.ELECTRICITY -> Icons.Default.FlashOn
                     InvoiceType.WATER -> Icons.Default.WaterDrop
                     InvoiceType.SERVICE -> Icons.Default.MiscellaneousServices
-                    null -> Icons.Default.Description // Fallback cho type lạ
+                    null -> Icons.Default.Description
                 }
 
                 Icon(
@@ -179,7 +187,7 @@ fun InvoiceCard(invoice: Invoice, onVerify: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = onVerify,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("invoice_verify_button_${invoice.id}"),
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Text("Xác nhận đã chuyển khoản", fontSize = 12.sp)
@@ -191,13 +199,11 @@ fun InvoiceCard(invoice: Invoice, onVerify: () -> Unit) {
 
 @Composable
 fun DynamicQrPaymentCard(amount: Double) {
-    // Thông tin ngân hàng của KTX (Giả lập cho demo)
-    val bankId = "MB" // Ngân hàng MB Bank
+    val bankId = "MB"
     val accountNo = "123456789"
     val accountName = "KTX SMART DORMITORY"
     val description = "THANH TOAN HOA DON KTX"
 
-    // Tạo link VietQR động
     val qrUrl = "https://img.vietqr.io/image/$bankId-$accountNo-compact2.png" +
             "?amount=${amount.toInt()}" +
             "&addInfo=${description.replace(" ", "%20")}" +
@@ -206,7 +212,8 @@ fun DynamicQrPaymentCard(amount: Double) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
+            .padding(top = 16.dp)
+            .testTag("dynamic_qr_card"),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column(
@@ -242,7 +249,7 @@ fun TotalAmountCard(total: Double) {
     Surface(
         color = MaterialTheme.colorScheme.primary,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag("total_amount_card"),
         shadowElevation = 4.dp
     ) {
         Column(Modifier.padding(24.dp)) {

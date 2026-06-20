@@ -1,8 +1,10 @@
 package com.ktx.dormitory.data.repository
 
 import com.ktx.dormitory.core.network.toUserFriendlyMessage
-import com.ktx.dormitory.data.api.AuthApiService
-import com.ktx.dormitory.data.local.TokenManager
+import com.ktx.dormitory.data.local.datasource.AuthLocalDataSource
+import com.ktx.dormitory.data.mapper.toDomain
+import com.ktx.dormitory.data.remote.datasource.AuthRemoteDataSource
+import com.ktx.dormitory.data.remote.dto.auth.*
 import com.ktx.dormitory.domain.model.*
 import com.ktx.dormitory.domain.repository.AuthRepository
 import javax.inject.Inject
@@ -10,19 +12,23 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val api: AuthApiService,
-    private val tokenManager: TokenManager
+    private val remoteDataSource: AuthRemoteDataSource,
+    private val localDataSource: AuthLocalDataSource
 ) : AuthRepository {
 
-    override suspend fun login(usernameOrEmail: String, password: String): Result<LoginResponse> {
+    override suspend fun login(usernameOrEmail: String, password: String): Result<UserData> {
         return try {
-            // Xóa token cũ trước khi login mới
-            tokenManager.clearTokens()
+            localDataSource.clearTokens()
             
-            val response = api.login(LoginRequest(usernameOrEmail, password))
+            val response = remoteDataSource.login(LoginRequest(usernameOrEmail, password))
             if (response.success && response.data != null) {
-                tokenManager.saveTokens(response.data.accessToken, response.data.refreshToken)
-                Result.success(response.data)
+                localDataSource.saveTokens(response.data.accessToken, response.data.refreshToken)
+                val user = UserData(
+                    username = usernameOrEmail,
+                    role = response.data.role,
+                    fullName = null
+                )
+                Result.success(user)
             } else {
                 Result.failure(Exception(response.message))
             }
@@ -33,9 +39,9 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getCurrentUser(): Result<UserData> {
         return try {
-            val response = api.getCurrentUser()
+            val response = remoteDataSource.getCurrentUser()
             if (response.success && response.data != null) {
-                Result.success(response.data)
+                Result.success(response.data.toDomain())
             } else {
                 Result.failure(Exception(response.message))
             }
@@ -46,7 +52,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun changePassword(oldPass: String, newPass: String): Result<Unit> {
         return try {
-            val response = api.changePassword(ChangePasswordRequest(oldPass, newPass))
+            val response = remoteDataSource.changePassword(ChangePasswordRequest(oldPass, newPass))
             if (response.success) Result.success(Unit) else Result.failure(Exception(response.message))
         } catch (e: Exception) { 
             Result.failure(Exception(e.toUserFriendlyMessage())) 
@@ -55,7 +61,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun forgotPassword(email: String): Result<Unit> {
         return try {
-            val response = api.forgotPassword(ForgotPasswordRequest(email))
+            val response = remoteDataSource.forgotPassword(ForgotPasswordRequest(email))
             if (response.success) Result.success(Unit) else Result.failure(Exception(response.message))
         } catch (e: Exception) { 
             Result.failure(Exception(e.toUserFriendlyMessage())) 
@@ -64,7 +70,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun resetPassword(token: String, newPass: String): Result<Unit> {
         return try {
-            val response = api.resetPassword(ResetPasswordRequest(token, newPass))
+            val response = remoteDataSource.resetPassword(ResetPasswordRequest(token, newPass))
             if (response.success) Result.success(Unit) else Result.failure(Exception(response.message))
         } catch (e: Exception) { 
             Result.failure(Exception(e.toUserFriendlyMessage())) 
@@ -73,10 +79,11 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() {
         try {
-            api.logout()
-            tokenManager.clearTokens(keepRefreshToken = true)
+            remoteDataSource.logout()
+            localDataSource.clearTokens(keepRefreshToken = false)
         } catch (e: Exception) {
-            tokenManager.clearTokens(keepRefreshToken = true)
+            localDataSource.clearTokens(keepRefreshToken = false)
         }
     }
 }
+

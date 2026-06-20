@@ -1,12 +1,15 @@
 package com.ktx.dormitory.core.network
 
-import com.ktx.dormitory.data.api.AuthApiService
 import com.ktx.dormitory.data.local.TokenManager
-import com.ktx.dormitory.domain.model.RefreshTokenRequest
+import com.ktx.dormitory.data.remote.api.AuthApiService
+import com.ktx.dormitory.data.remote.dto.auth.RefreshTokenRequest
 import com.ktx.dormitory.domain.repository.UserRepository
 import com.ktx.dormitory.util.AuthEvent
 import com.ktx.dormitory.util.AuthEventBus
 import kotlinx.coroutines.flow.first
+import com.ktx.dormitory.di.ApplicationScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
@@ -18,7 +21,8 @@ import javax.inject.Provider
 class TokenAuthenticator @Inject constructor(
     private val tokenManager: TokenManager,
     private val userRepositoryProvider: Provider<UserRepository>,
-    private val apiHolder: Provider<AuthApiService>
+    private val apiHolder: Provider<AuthApiService>,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -86,7 +90,7 @@ class TokenAuthenticator @Inject constructor(
     }
 
     private fun handleLogout() {
-        runBlocking {
+        applicationScope.launch {
             try {
                 tokenManager.clearTokens()
                 userRepositoryProvider.get().clearAllData()

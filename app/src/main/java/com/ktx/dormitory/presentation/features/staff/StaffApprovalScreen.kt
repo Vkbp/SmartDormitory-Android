@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ktx.dormitory.domain.model.DormRequest
 import com.ktx.dormitory.domain.model.RequestStatus
@@ -25,13 +26,11 @@ fun StaffApprovalScreen(
     navController: NavController,
     viewModel: StaffApprovalViewModel = hiltViewModel()
 ) {
-    val requests by viewModel.requests.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(error) {
-        error?.let {
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             viewModel.clearError()
         }
@@ -50,9 +49,9 @@ fun StaffApprovalScreen(
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
-            if (isLoading && requests.isEmpty()) {
+            if (uiState.isLoading && uiState.requests.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (requests.isEmpty()) {
+            } else if (uiState.requests.isEmpty()) {
                 Text("Không có yêu cầu nào cần duyệt", modifier = Modifier.align(Alignment.Center))
             } else {
                 LazyColumn(
@@ -60,7 +59,7 @@ fun StaffApprovalScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(requests) { request ->
+                    items(uiState.requests) { request ->
                         ApprovalCard(
                             request = request,
                             onApprove = { viewModel.updateStatus(request.id, RequestStatus.APPROVED) },

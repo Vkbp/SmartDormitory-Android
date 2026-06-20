@@ -27,7 +27,7 @@ import com.ktx.dormitory.presentation.components.ErrorView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ApplicationStatusScreen(navController: NavController, viewModel: StudentViewModel) {
+fun ApplicationStatusScreen(navController: NavController, viewModel: ApplicationViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -48,7 +48,7 @@ fun ApplicationStatusScreen(navController: NavController, viewModel: StudentView
                 uiState.isLoading -> LoadingView()
                 uiState.error != null -> ErrorView(
                     message = uiState.error ?: "Lỗi không xác định",
-                    onRetry = { viewModel.loadAllData() }
+                    onRetry = { viewModel.loadApplication() }
                 )
                 app != null -> {
                     Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {

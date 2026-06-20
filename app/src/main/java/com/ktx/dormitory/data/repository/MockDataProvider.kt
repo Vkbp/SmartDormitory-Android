@@ -5,17 +5,17 @@ import com.ktx.dormitory.domain.model.*
 object MockDataProvider {
 
     fun getMockProfile() = UserProfile(
-        id = 1,
-        username = "student01",
+        id = "1",
+        studentCode = "student01",
         fullName = "Nguyễn Văn A",
-        cccd = "079204005678",
+        citizenId = "079204005678",
         gender = "MALE",
         birthDate = "2004-01-15", // yyyy-MM-dd
         faculty = "Information Technology",
         course = "K20",
         phone = "0912345678",
         email = "vana@example.com",
-        address = "Hồ Chí Minh, Việt Nam",
+        permanentAddress = "Hồ Chí Minh, Việt Nam",
         role = "USER",
         avatarUrl = null
     )

@@ -10,9 +10,9 @@ import androidx.navigation.NavGraph.Companion.findStartDestination // THÊM DÒN
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ktx.dormitory.navigation.Screen
 
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ktx.dormitory.presentation.features.auth.LoginViewModel
 
 data class BottomNavItem(
@@ -26,7 +26,8 @@ fun BottomNavBar(
     navController: NavController,
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
-    val userData by loginViewModel.userData.collectAsState()
+    val loginState by loginViewModel.uiState.collectAsStateWithLifecycle()
+    val userData = loginState.userData
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 

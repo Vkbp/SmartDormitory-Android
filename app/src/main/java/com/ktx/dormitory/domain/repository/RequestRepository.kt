@@ -5,8 +5,8 @@ import com.ktx.dormitory.domain.model.RequestStatus
 import com.ktx.dormitory.domain.model.RequestType
 
 interface RequestRepository {
+    suspend fun submitRequest(type: RequestType, content: String): Result<Unit>
     suspend fun getMyRequests(): Result<List<DormRequest>>
-    suspend fun createRequest(type: RequestType, content: String): Result<Unit>
-    suspend fun getAllRequests(): Result<List<DormRequest>>
-    suspend fun updateRequestStatus(id: String, status: RequestStatus): Result<Unit>
+    suspend fun getPendingRequests(): Result<List<DormRequest>>
+    suspend fun updateRequestStatus(requestId: String, status: RequestStatus): Result<Unit>
 }

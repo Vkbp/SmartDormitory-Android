@@ -7,14 +7,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ktx.dormitory.presentation.features.access.AccessHistoryScreen
 import com.ktx.dormitory.presentation.features.access.AccessScreen
-import com.ktx.dormitory.presentation.features.access.FaceDetectionScreen
-import com.ktx.dormitory.presentation.features.access.FaceRegistrationScreen
-import com.ktx.dormitory.presentation.features.access.FaceVerificationScreen
+import com.ktx.dormitory.presentation.face.screen.FaceDetectionScreen
+import com.ktx.dormitory.presentation.face.screen.FaceRegistrationScreen
+import com.ktx.dormitory.presentation.face.screen.FaceVerificationScreen
 import com.ktx.dormitory.presentation.features.auth.ChangePasswordScreen
 import com.ktx.dormitory.presentation.features.auth.LoginScreen
 import com.ktx.dormitory.presentation.features.auth.LoginViewModel
@@ -24,12 +25,7 @@ import com.ktx.dormitory.presentation.features.payment.PaymentScreen
 import com.ktx.dormitory.presentation.features.request.RequestScreen
 import com.ktx.dormitory.presentation.features.staff.StaffApprovalScreen
 import com.ktx.dormitory.HomeScreen
-import com.ktx.dormitory.presentation.features.student.ProfileScreen
-import com.ktx.dormitory.presentation.features.student.QuickExtendScreen
-import com.ktx.dormitory.presentation.features.student.RoomScreen
-import com.ktx.dormitory.presentation.features.student.ApplicationStatusScreen
-import com.ktx.dormitory.presentation.features.student.PaymentHistoryScreen
-import com.ktx.dormitory.presentation.features.student.StudentViewModel
+import com.ktx.dormitory.presentation.features.student.*
 import com.ktx.dormitory.presentation.components.PlaceholderScreen
 
 sealed class Screen(val route: String, val title: String) {
@@ -66,7 +62,8 @@ fun RoleGuard(
     loginViewModel: LoginViewModel,
     content: @Composable () -> Unit
 ) {
-    val userData by loginViewModel.userData.collectAsState()
+    val loginState by loginViewModel.uiState.collectAsStateWithLifecycle()
+    val userData = loginState.userData
     
     // Thêm log để bạn kiểm tra trong Logcat
     /* LaunchedEffect(userData) {
@@ -138,22 +135,22 @@ fun AppNavigation(navController: NavHostController) {
         }
 
         composable(Screen.Profile.route) {
-            ProfileScreen(navController, loginViewModel)
+            ProfileScreen(navController)
         }
 
         composable(Screen.RoomInfo.route) {
-            val studentViewModel: StudentViewModel = hiltViewModel()
-            RoomScreen(navController, studentViewModel)
+            val roomViewModel: RoomViewModel = hiltViewModel()
+            RoomScreen(navController, roomViewModel)
         }
 
         composable(Screen.ApplicationStatus.route) {
-            val studentViewModel: StudentViewModel = hiltViewModel()
-            ApplicationStatusScreen(navController, studentViewModel)
+            val applicationViewModel: ApplicationViewModel = hiltViewModel()
+            ApplicationStatusScreen(navController, applicationViewModel)
         }
 
         composable(Screen.PaymentHistory.route) {
-            val studentViewModel: StudentViewModel = hiltViewModel()
-            PaymentHistoryScreen(navController, studentViewModel)
+            val paymentHistoryViewModel: PaymentHistoryViewModel = hiltViewModel()
+            PaymentHistoryScreen(navController, paymentHistoryViewModel)
         }
 
         composable(Screen.Notifications.route) { NotificationScreen(navController) }

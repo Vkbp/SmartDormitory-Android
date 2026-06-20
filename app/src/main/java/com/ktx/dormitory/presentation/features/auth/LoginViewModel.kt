@@ -1,65 +1,43 @@
 package com.ktx.dormitory.presentation.features.auth
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ktx.dormitory.domain.repository.UserRepository
+import com.ktx.dormitory.domain.usecase.auth.*
 import com.ktx.dormitory.domain.model.UserData
-import com.ktx.dormitory.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class LoginUiState(
-    val isLoading: Boolean = false,
-    val mssvError: String? = null,
-    val passwordError: String? = null,
-    val userData: UserData? = null,
-    val error: String? = null
-)
-
 @HiltViewModel
 open class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val userRepository: UserRepository
+    private val loginUseCase: LoginUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    private val getAuthStateUseCase: GetAuthStateUseCase,
+    private val changePasswordUseCase: ChangePasswordUseCase,
+    private val forgotPasswordUseCase: ForgotPasswordUseCase,
+    private val resetPasswordUseCase: ResetPasswordUseCase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    // Thêm open để MockK có thể override trên Android
-    var isLoading by mutableStateOf(false)
-    var mssvError by mutableStateOf<String?>(null)
-    var passwordError by mutableStateOf<String?>(null)
+    // Sử dụng SavedStateHandle để bảo vệ state khỏi Process Death
+    open val uiState: StateFlow<LoginUiState> = savedStateHandle.getStateFlow("uiState", LoginUiState())
 
-    private val _userData = MutableStateFlow<UserData?>(null)
-    open val userData: StateFlow<UserData?> = _userData.asStateFlow()
-
-    private val _uiState = MutableStateFlow(LoginUiState())
-    // Thuộc tính uiState PHẢI open để bài UI Test không bị crash
-    open val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    private fun updateUiState(reducer: (LoginUiState) -> LoginUiState) {
+        savedStateHandle["uiState"] = reducer(uiState.value)
+    }
 
     init {
-        fetchCurrentUser()
-    }
-
-    private fun updateUserData(data: UserData?) {
-        _userData.value = data
-        _uiState.update { it.copy(userData = data) }
-    }
-
-    private fun updateLoading(loading: Boolean) {
-        this.isLoading = loading
-        _uiState.update { it.copy(isLoading = loading) }
+        if (uiState.value.userData == null) {
+            fetchCurrentUser()
+        }
     }
 
     open fun fetchCurrentUser() {
         viewModelScope.launch {
-            authRepository.getCurrentUser().onSuccess { data ->
-                updateUserData(data)
+            getAuthStateUseCase().onSuccess { data ->
+                updateUiState { it.copy(userData = data) }
             }
         }
     }
@@ -70,59 +48,44 @@ open class LoginViewModel @Inject constructor(
         onSuccess: (String) -> Unit,
         onError: (String) -> Unit
     ) {
-        mssvError = null
-        passwordError = null
-        _uiState.update { it.copy(mssvError = null, passwordError = null, error = null) }
+        updateUiState { it.copy(mssvError = null, passwordError = null, error = null) }
 
-        var isValid = true
         if (usernameOrEmail.isBlank()) {
-            mssvError = "MSSV hoặc Email không được để trống"
-            _uiState.update { it.copy(mssvError = "MSSV hoặc Email không được để trống") }
-            isValid = false
+            updateUiState { it.copy(mssvError = "MSSV hoặc Email không được để trống") }
+            return
         }
         if (password.isBlank()) {
-            passwordError = "Mật khẩu không được để trống"
-            _uiState.update { it.copy(passwordError = "Mật khẩu không được để trống") }
-            isValid = false
+            updateUiState { it.copy(passwordError = "Mật khẩu không được để trống") }
+            return
         }
 
-        if (!isValid) return
-
         viewModelScope.launch {
-            updateLoading(true)
-            val result = authRepository.login(usernameOrEmail, password)
-            
-            if (result.isSuccess) {
-                val data = result.getOrNull()!!
-                userRepository.saveLoginStatus(true)
-                val user = UserData(usernameOrEmail, data.role, "")
-                _userData.value = user
-                _uiState.update { it.copy(isLoading = false, userData = user) }
-                this@LoginViewModel.isLoading = false
-                fetchCurrentUser()
-                onSuccess(data.role)
-            } else {
-                val errorMsg = result.exceptionOrNull()?.message ?: "Đăng nhập thất bại"
-                _uiState.update { it.copy(isLoading = false, error = errorMsg) }
-                this@LoginViewModel.isLoading = false
-                onError(errorMsg)
-            }
+            updateUiState { it.copy(isLoading = true) }
+            loginUseCase(usernameOrEmail, password)
+                .onSuccess { data ->
+                    updateUiState { it.copy(isLoading = false, userData = data) }
+                    onSuccess(data.role ?: "STUDENT")
+                }
+                .onFailure { e ->
+                    val errorMsg = e.message ?: "Đăng nhập thất bại"
+                    updateUiState { it.copy(isLoading = false, error = errorMsg) }
+                    onError(errorMsg)
+                }
         }
     }
 
     open fun logout(onComplete: () -> Unit) {
         viewModelScope.launch {
-            authRepository.logout()
-            userRepository.saveLoginStatus(false)
-            updateUserData(null)
+            logoutUseCase()
+            updateUiState { it.copy(userData = null) }
             onComplete()
         }
     }
 
     open fun checkAuthStatus(onResult: (String?) -> Unit) {
         viewModelScope.launch {
-            authRepository.getCurrentUser().onSuccess { data ->
-                updateUserData(data)
+            getAuthStateUseCase().onSuccess { data ->
+                updateUiState { it.copy(userData = data) }
                 onResult(data.role)
             }.onFailure { onResult(null) }
         }
@@ -130,13 +93,12 @@ open class LoginViewModel @Inject constructor(
 
     open fun loginWithBiometric(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            updateLoading(true)
-            authRepository.getCurrentUser().onSuccess { data ->
-                updateUserData(data)
-                updateLoading(false)
-                onSuccess(data.role)
+            updateUiState { it.copy(isLoading = true) }
+            getAuthStateUseCase().onSuccess { data ->
+                updateUiState { it.copy(isLoading = false, userData = data) }
+                onSuccess(data.role ?: "STUDENT")
             }.onFailure {
-                updateLoading(false)
+                updateUiState { it.copy(isLoading = false) }
                 onError("Phiên đăng nhập hết hạn")
             }
         }
@@ -144,12 +106,12 @@ open class LoginViewModel @Inject constructor(
 
     open fun changePassword(oldPass: String, newPass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            updateLoading(true)
-            authRepository.changePassword(oldPass, newPass).onSuccess {
-                updateLoading(false)
+            updateUiState { it.copy(isLoading = true) }
+            changePasswordUseCase(oldPass, newPass).onSuccess {
+                updateUiState { it.copy(isLoading = false) }
                 onSuccess()
             }.onFailure {
-                updateLoading(false)
+                updateUiState { it.copy(isLoading = false) }
                 onError(it.message ?: "Lỗi")
             }
         }
@@ -157,12 +119,12 @@ open class LoginViewModel @Inject constructor(
 
     open fun forgotPassword(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            updateLoading(true)
-            authRepository.forgotPassword(email).onSuccess {
-                updateLoading(false)
+            updateUiState { it.copy(isLoading = true) }
+            forgotPasswordUseCase(email).onSuccess {
+                updateUiState { it.copy(isLoading = false) }
                 onSuccess()
             }.onFailure {
-                updateLoading(false)
+                updateUiState { it.copy(isLoading = false) }
                 onError(it.message ?: "Lỗi")
             }
         }
@@ -170,12 +132,12 @@ open class LoginViewModel @Inject constructor(
 
     open fun resetPassword(token: String, newPass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            updateLoading(true)
-            authRepository.resetPassword(token, newPass).onSuccess {
-                updateLoading(false)
+            updateUiState { it.copy(isLoading = true) }
+            resetPasswordUseCase(token, newPass).onSuccess {
+                updateUiState { it.copy(isLoading = false) }
                 onSuccess()
             }.onFailure {
-                updateLoading(false)
+                updateUiState { it.copy(isLoading = false) }
                 onError(it.message ?: "Lỗi đặt lại mật khẩu")
             }
         }
@@ -183,8 +145,8 @@ open class LoginViewModel @Inject constructor(
 
     open fun getUserInfo(onSuccess: (UserData) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            authRepository.getCurrentUser().onSuccess {
-                updateUserData(it)
+            getAuthStateUseCase().onSuccess {
+                updateUiState { it.copy(userData = it.userData) }
                 onSuccess(it)
             }.onFailure {
                 onError(it.message ?: "Lỗi tải thông tin")

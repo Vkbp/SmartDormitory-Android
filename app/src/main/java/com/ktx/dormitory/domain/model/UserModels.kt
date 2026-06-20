@@ -1,94 +1,125 @@
 package com.ktx.dormitory.domain.model
 
-import com.google.gson.annotations.SerializedName
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 /**
- * 1. Hồ sơ người dùng chi tiết (Đã bổ sung đầy đủ các trường theo API_DOCUMENTATION.md)
+ * Model hồ sơ người dùng trong Domain Layer
  */
+@Parcelize
 data class UserProfile(
-    @SerializedName("studentId") val id: String? = null,
-    @SerializedName("studentCode") val studentCode: String? = null,
-    @SerializedName("fullName") val fullName: String? = null,
-    @SerializedName("cccd") val citizenId: String? = null,
-    @SerializedName("email") val email: String? = null,
-    @SerializedName("phone") val phone: String? = null,
-    @SerializedName("faculty") val faculty: String? = null,
-    @SerializedName("academicYear") val academicYear: String? = null,
-    
-    // Các trường thông tin gia đình và liên hệ khẩn cấp (Mới bổ sung)
-    @SerializedName("fatherName") val fatherName: String? = null,
-    @SerializedName("fatherPhone") val fatherPhone: String? = null,
-    @SerializedName("motherName") val motherName: String? = null,
-    @SerializedName("motherPhone") val motherPhone: String? = null,
-    @SerializedName("emergencyContact") val emergencyContact: String? = null,
-    @SerializedName("permanentAddress") val permanentAddress: String? = null,
-    
-    @SerializedName("avatarUrl") val avatarUrl: String? = null,
-    @SerializedName("status") val status: String? = null,
-    
-    // Các trường cũ để đảm bảo tương thích
-    @SerializedName("gender") val gender: String? = null,
-    @SerializedName("birthDate") val birthDate: String? = null,
-    @SerializedName("course") val course: String? = null,
-    @SerializedName("role") val role: String? = null
-)
+    val id: String? = null,
+    val studentCode: String? = null,
+    val fullName: String? = null,
+    val citizenId: String? = null,
+    val email: String? = null,
+    val phone: String? = null,
+    val faculty: String? = null,
+    val academicYear: String? = null,
+    val fatherName: String? = null,
+    val fatherPhone: String? = null,
+    val motherName: String? = null,
+    val motherPhone: String? = null,
+    val emergencyContact: String? = null,
+    val permanentAddress: String? = null,
+    val avatarUrl: String? = null,
+    val status: String? = null,
+    val gender: String? = null,
+    val birthDate: String? = null,
+    val course: String? = null,
+    val role: String? = null
+) : Parcelable
 
 /**
- * 2. Thông tin Phòng
+ * Model thông tin phòng
  */
+@Parcelize
 data class RoomInfo(
-    @SerializedName("building") val building: String?,
-    @SerializedName("floor") val floor: String?,
-    @SerializedName("room_code") val roomCode: String?,
-    @SerializedName("bed_code") val bedCode: String?,
-    @SerializedName("status") val status: String?
-)
+    val building: String?,
+    val floor: String?,
+    val roomCode: String?,
+    val bedCode: String?,
+    val status: String?
+) : Parcelable
 
 /**
- * 3. Giao dịch thanh toán
+ * Model giao dịch thanh toán
  */
+@Parcelize
 data class Transaction(
-    @SerializedName("transaction_id") val transactionId: String?,
-    @SerializedName("amount") val amount: Double?,
-    @SerializedName("payment_method") val method: String?,
-    @SerializedName("status") val status: String?,
-    @SerializedName("created_at") val createdAt: String?,
-    @SerializedName("type") val type: String? = null,
-    @SerializedName("message") val message: String? = null
-)
+    val transactionId: String?,
+    val amount: Double?,
+    val method: String?,
+    val status: String?,
+    val createdAt: String?,
+    val type: String? = null,
+    val message: String? = null
+) : Parcelable
 
+/**
+ * Model đơn đăng ký nội trú
+ */
+@Parcelize
 data class DormApplication(
-    @SerializedName("application_code") val applicationCode: String?,
-    @SerializedName("status") val status: String?,
-    @SerializedName("submission_date") val submissionDate: String?,
-    @SerializedName("payment_deadline") val paymentDeadline: String?,
-    @SerializedName("timeline") val timeline: List<TimelineStep> = emptyList()
-)
+    val applicationCode: String?,
+    val status: String?,
+    val submissionDate: String?,
+    val paymentDeadline: String?,
+    val timeline: List<TimelineStep> = emptyList()
+) : Parcelable
 
+@Parcelize
 data class TimelineStep(
-    @SerializedName("title") val title: String?,
-    @SerializedName("description") val description: String?,
-    @SerializedName("timestamp") val timestamp: String?,
-    @SerializedName("step_status") val stepStatus: AppStepStatus?
-)
+    val title: String?,
+    val description: String?,
+    val timestamp: String?,
+    val stepStatus: AppStepStatus?
+) : Parcelable
 
-enum class AppStepStatus { 
-    @SerializedName("COMPLETED") COMPLETED, 
-    @SerializedName("CURRENT") CURRENT, 
-    @SerializedName("WAITING") WAITING 
+@Parcelize
+enum class AppStepStatus : Parcelable {
+    COMPLETED,
+    CURRENT,
+    WAITING
+}
+
+@Parcelize
+data class Invoice(
+    val id: Long,
+    val type: InvoiceType?,
+    val amount: Double,
+    val paidAmount: Double,
+    val remainingAmount: Double,
+    val status: PaymentStatus?,
+    val dueDate: String?,
+    val description: String,
+    val roomCode: String? = null,
+    val bedCode: String? = null
+) : Parcelable
+
+@Parcelize
+enum class InvoiceType : Parcelable {
+    ROOM, ELECTRICITY, WATER, SERVICE
+}
+
+@Parcelize
+enum class PaymentStatus : Parcelable {
+    UNPAID, PARTIALLY_PAID, PAID, OVERDUE
 }
 
 /**
- * 4. Yêu cầu cập nhật hồ sơ (Đã bổ sung đầy đủ theo API_DOCUMENTATION.md)
+ * Model yêu cầu cập nhật hồ sơ
  */
+@Parcelize
 data class UpdateProfileRequest(
-    @SerializedName("email") val email: String? = null,
-    @SerializedName("phone") val phone: String? = null,
-    @SerializedName("fatherName") val fatherName: String? = null,
-    @SerializedName("fatherPhone") val fatherPhone: String? = null,
-    @SerializedName("motherName") val motherName: String? = null,
-    @SerializedName("motherPhone") val motherPhone: String? = null,
-    @SerializedName("emergencyContact") val emergencyContact: String? = null,
-    @SerializedName("permanentAddress") val permanentAddress: String? = null,
-    @SerializedName("avatarUrl") val avatarUrl: String? = null
-)
+    val fullName: String? = null,
+    val email: String? = null,
+    val phone: String? = null,
+    val fatherName: String? = null,
+    val fatherPhone: String? = null,
+    val motherName: String? = null,
+    val motherPhone: String? = null,
+    val emergencyContact: String? = null,
+    val permanentAddress: String? = null,
+    val avatarUrl: String? = null
+) : Parcelable

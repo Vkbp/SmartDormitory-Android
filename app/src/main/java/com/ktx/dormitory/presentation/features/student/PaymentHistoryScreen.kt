@@ -25,7 +25,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaymentHistoryScreen(navController: NavController, viewModel: StudentViewModel) {
+fun PaymentHistoryScreen(navController: NavController, viewModel: PaymentHistoryViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
@@ -45,7 +45,7 @@ fun PaymentHistoryScreen(navController: NavController, viewModel: StudentViewMod
                 uiState.isLoading -> LoadingView()
                 uiState.error != null -> ErrorView(
                     message = uiState.error ?: "Lỗi không xác định",
-                    onRetry = { viewModel.loadAllData() }
+                    onRetry = { viewModel.loadPaymentHistory() }
                 )
                 uiState.transactions.isEmpty() -> EmptyView(message = "Chưa có giao dịch nào", icon = Icons.Default.ReceiptLong)
                 else -> {

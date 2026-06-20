@@ -1,50 +1,24 @@
 package com.ktx.dormitory.domain.model
 
-import com.google.gson.annotations.SerializedName
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-// Format chung của API (Chương 7)
-data class BaseResponse<T>(
-    val success: Boolean,
-    val message: String,
-    val data: T?
-)
-
-// Dữ liệu Login (Chương 10) - Đã chuẩn hóa theo API Doc
-data class LoginRequest(
-    @SerializedName("usernameOrEmail") val usernameOrEmail: String, 
-    val password: String
-)
-
-data class LoginResponse(
-    val accessToken: String,
-    val refreshToken: String,
-    val tokenType: String = "Bearer",
-    val role: String
-)
-
-// Dữ liệu Refresh Token (Chương 13) - Đã chuẩn hóa naming theo API Doc
-data class RefreshTokenRequest(val refreshToken: String)
-
-// Đảm bảo class UserData có đầy đủ các trường này
+/**
+ * Model đại diện cho thông tin người dùng trong ứng dụng
+ */
+@Parcelize
 data class UserData(
     val username: String,
-    val role: String,
-    @SerializedName("fullName", alternate = ["full_name"]) val fullName: String? = null // Cho phép Null vì API auth/me có thể không trả về tên
-)
+    val role: String? = null,
+    val fullName: String? = null
+) : Parcelable
 
-// Dữ liệu cho đổi mật khẩu (Chương 12)
-data class ChangePasswordRequest(
-    val oldPassword: String,
-    val newPassword: String
-)
-
-// Dữ liệu cho quên mật khẩu (Chương 15)
-data class ForgotPasswordRequest(
-    val email: String
-)
-
-// Dữ liệu cho đặt lại mật khẩu (Mới bổ sung theo API Doc)
-data class ResetPasswordRequest(
-    val token: String,
-    val newPassword: String
-)
+/**
+ * Các lỗi liên quan đến xác thực
+ */
+sealed class AuthError : Exception() {
+    object InvalidCredentials : AuthError()
+    object NetworkError : AuthError()
+    object SessionExpired : AuthError()
+    data class UnknownError(override val message: String) : AuthError()
+}

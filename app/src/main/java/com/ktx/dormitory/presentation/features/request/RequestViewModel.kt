@@ -1,68 +1,86 @@
 package com.ktx.dormitory.presentation.features.request
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ktx.dormitory.domain.model.DormRequest
 import com.ktx.dormitory.domain.model.RequestType
 import com.ktx.dormitory.domain.repository.RequestRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import javax.inject.Inject
 
 @HiltViewModel
 class RequestViewModel @Inject constructor(
-    private val repository: RequestRepository
+    private val repository: RequestRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(RequestFormState())
-    val uiState = _uiState.asStateFlow()
 
-    private val _myRequests = MutableStateFlow<List<DormRequest>>(emptyList())
-    val myRequests: StateFlow<List<DormRequest>> = _myRequests.asStateFlow()
+    val uiState: StateFlow<RequestUiState> = savedStateHandle.getStateFlow("uiState", RequestUiState())
+    val formState: StateFlow<RequestFormState> = savedStateHandle.getStateFlow("formState", RequestFormState())
 
-    init {
-        fetchMyRequests()
+    private val submitMutex = Mutex()
+
+    private fun updateUiState(reducer: (RequestUiState) -> RequestUiState) {
+        savedStateHandle["uiState"] = reducer(uiState.value)
     }
 
-    fun fetchMyRequests() {
-        viewModelScope.launch {
-            repository.getMyRequests()
-                .onSuccess { list -> _myRequests.value = list }
+    private fun updateFormState(reducer: (RequestFormState) -> RequestFormState) {
+        savedStateHandle["formState"] = reducer(formState.value)
+    }
+
+    init {
+        if (uiState.value.requests.isEmpty()) {
+            loadMyRequests()
         }
     }
 
-    fun onContentChange(newContent: String) {
-        _uiState.update { it.copy(content = newContent, error = null) }
+    fun loadMyRequests() {
+        viewModelScope.launch {
+            updateUiState { it.copy(isLoading = true, error = null) }
+            repository.getMyRequests()
+                .onSuccess { data ->
+                    updateUiState { it.copy(isLoading = false, requests = data) }
+                }
+                .onFailure { e ->
+                    updateUiState { it.copy(isLoading = false, error = e.message) }
+                }
+        }
     }
 
-    fun onTypeChange(newType: RequestType) {
-        _uiState.update { it.copy(type = newType) }
+    fun onContentChange(content: String) {
+        updateFormState { it.copy(content = content) }
+    }
+
+    fun onTypeChange(type: RequestType) {
+        updateFormState { it.copy(type = type) }
     }
 
     fun submitRequest() {
-        val content = _uiState.value.content
-        val type = _uiState.value.type
-
-        if (content.isBlank()) {
-            _uiState.update { it.copy(error = "Vui lòng nhập nội dung yêu cầu") }
-            return
-        }
-
+        val type = formState.value.type
+        val content = formState.value.content
+        
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            repository.createRequest(type, content)
-                .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, isSuccess = true, content = "") }
-                    fetchMyRequests() // Cập nhật lại danh sách yêu cầu
-                }
-                .onFailure { exception ->
-                    _uiState.update { it.copy(isLoading = false, error = exception.message) }
-                }
+            if (submitMutex.isLocked) return@launch
+            
+            submitMutex.withLock {
+                updateUiState { it.copy(isSubmitting = true, submitSuccess = false) }
+                repository.submitRequest(type, content)
+                    .onSuccess {
+                        updateUiState { it.copy(isSubmitting = false, submitSuccess = true) }
+                        updateFormState { RequestFormState() } // Reset form
+                        loadMyRequests()
+                    }
+                    .onFailure { e ->
+                        updateUiState { it.copy(isSubmitting = false, error = e.message) }
+                    }
+            }
         }
     }
 
-    fun resetSuccess() { _uiState.update { it.copy(isSuccess = false) } }
+    fun clearStatus() {
+        updateUiState { it.copy(submitSuccess = false, error = null) }
+    }
 }

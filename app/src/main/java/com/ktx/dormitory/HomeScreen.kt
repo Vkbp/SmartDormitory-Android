@@ -26,20 +26,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ktx.dormitory.navigation.Screen
 import com.ktx.dormitory.presentation.components.BottomNavBar
 import com.ktx.dormitory.presentation.features.auth.LoginViewModel
-import com.ktx.dormitory.presentation.features.student.StudentViewModel
+import com.ktx.dormitory.presentation.features.student.RoomViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
     loginViewModel: LoginViewModel,
-    studentViewModel: StudentViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    roomViewModel: RoomViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
-    val userData by loginViewModel.userData.collectAsState()
-    val studentState by studentViewModel.uiState.collectAsState()
+    val loginState by loginViewModel.uiState.collectAsStateWithLifecycle()
+    val userData = loginState.userData
+    val roomState by roomViewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
     LaunchedEffect(userData) {
@@ -71,7 +73,7 @@ fun HomeScreen(
             
             WelcomeSection(
                 name = userData?.fullName ?: "Người dùng",
-                room = if (isStudent) (studentState.roomInfo?.roomCode ?: "...") else null, // ẨN PHÒNG NẾU LÀ ADMIN
+                room = if (isStudent) (roomState.roomInfo?.roomCode ?: "...") else null, // ẨN PHÒNG NẾU LÀ ADMIN
                 onRoomClick = { if (isStudent) navController.navigate(Screen.RoomInfo.route) }
             )
 

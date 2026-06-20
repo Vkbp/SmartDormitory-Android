@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,15 +26,15 @@ import com.ktx.dormitory.domain.model.RequestType
 @Composable
 fun RequestScreen(navController: NavController, viewModel: RequestViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val myRequests by viewModel.myRequests.collectAsStateWithLifecycle()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var expanded by remember { mutableStateOf(false) }
     var showConfirmDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
+    LaunchedEffect(uiState.submitSuccess) {
+        if (uiState.submitSuccess) {
             snackbarHostState.showSnackbar("Gửi yêu cầu thành công!")
-            viewModel.resetSuccess()
+            viewModel.clearStatus()
         }
     }
 
@@ -43,13 +44,19 @@ fun RequestScreen(navController: NavController, viewModel: RequestViewModel = hi
             title = { Text("Gửi yêu cầu?") },
             text = { Text("Bạn có chắc chắn muốn gửi yêu cầu này tới ban quản lý KTX không?") },
             confirmButton = {
-                Button(onClick = {
-                    viewModel.submitRequest()
-                    showConfirmDialog = false
-                }) { Text("Gửi ngay") }
+                Button(
+                    onClick = {
+                        viewModel.submitRequest()
+                        showConfirmDialog = false
+                    },
+                    modifier = Modifier.testTag("request_confirm_dialog_confirm")
+                ) { Text("Gửi ngay") }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) { Text("Hủy") }
+                TextButton(
+                    onClick = { showConfirmDialog = false },
+                    modifier = Modifier.testTag("request_confirm_dialog_cancel")
+                ) { Text("Hủy") }
             }
         )
     }
@@ -70,13 +77,14 @@ fun RequestScreen(navController: NavController, viewModel: RequestViewModel = hi
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .testTag("request_screen_column"),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 RequestForm(
-                    uiState = uiState,
+                    formState = formState,
                     expanded = expanded,
                     onExpandedChange = { expanded = it },
                     onTypeChange = { viewModel.onTypeChange(it) },
@@ -91,14 +99,14 @@ fun RequestScreen(navController: NavController, viewModel: RequestViewModel = hi
                 Text("Yêu cầu của tôi", style = MaterialTheme.typography.titleMedium)
             }
 
-            if (myRequests.isEmpty()) {
+            if (uiState.requests.isEmpty()) {
                 item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp).testTag("request_empty_view"), contentAlignment = Alignment.Center) {
                         Text("Bạn chưa gửi yêu cầu nào", color = Color.Gray)
                     }
                 }
             } else {
-                items(myRequests) { request ->
+                items(uiState.requests) { request ->
                     MyRequestCard(request)
                 }
             }
@@ -109,7 +117,7 @@ fun RequestScreen(navController: NavController, viewModel: RequestViewModel = hi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RequestForm(
-    uiState: RequestFormState,
+    formState: RequestFormState,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onTypeChange: (RequestType) -> Unit,
@@ -121,10 +129,11 @@ fun RequestForm(
 
         ExposedDropdownMenuBox(
             expanded = expanded,
-            onExpandedChange = onExpandedChange
+            onExpandedChange = onExpandedChange,
+            modifier = Modifier.testTag("request_type_dropdown")
         ) {
             OutlinedTextField(
-                value = uiState.type.displayName,
+                value = formState.type.displayName,
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -137,29 +146,30 @@ fun RequestForm(
                         onClick = {
                             onTypeChange(type)
                             onExpandedChange(false)
-                        }
+                        },
+                        modifier = Modifier.testTag("request_type_item_${type.name}")
                     )
                 }
             }
         }
 
         OutlinedTextField(
-            value = uiState.content,
+            value = formState.content,
             onValueChange = onContentChange,
             label = { Text("Nội dung chi tiết") },
-            modifier = Modifier.fillMaxWidth().height(120.dp),
-            isError = uiState.error != null,
-            supportingText = { uiState.error?.let { Text(it) } }
+            modifier = Modifier.fillMaxWidth().height(120.dp).testTag("request_content_field"),
+            isError = formState.error != null,
+            supportingText = { formState.error?.let { Text(it) } }
         )
 
         Button(
             onClick = onSubmit,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading,
+            modifier = Modifier.fillMaxWidth().testTag("request_submit_button"),
+            enabled = !formState.isLoading,
             shape = RoundedCornerShape(8.dp)
         ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+            if (formState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp).testTag("request_loading_indicator"), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
             } else {
                 Text("GỬI YÊU CẦU")
             }
@@ -170,7 +180,7 @@ fun RequestForm(
 @Composable
 fun MyRequestCard(request: DormRequest) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag("request_card_${request.id}"),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

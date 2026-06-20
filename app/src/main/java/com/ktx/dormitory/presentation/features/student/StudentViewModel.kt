@@ -1,16 +1,18 @@
 package com.ktx.dormitory.presentation.features.student
 
+import android.os.Parcelable
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ktx.dormitory.domain.model.*
-import com.ktx.dormitory.domain.repository.UserRepository
+import com.ktx.dormitory.domain.usecase.user.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
+@Parcelize
 data class StudentUiState(
     val isLoading: Boolean = false,
     val isUploading: Boolean = false,
@@ -20,30 +22,41 @@ data class StudentUiState(
     val transactions: List<Transaction> = emptyList(),
     val error: String? = null,
     val uploadSuccess: Boolean = false
-)
+) : Parcelable
 
 @HiltViewModel
 class StudentViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val getProfileUseCase: GetProfileUseCase,
+    private val updateProfileUseCase: UpdateProfileUseCase,
+    private val getRoomInfoUseCase: GetRoomInfoUseCase,
+    private val getApplicationTimelineUseCase: GetApplicationTimelineUseCase,
+    private val getPaymentHistoryUseCase: GetPaymentHistoryUseCase,
+    private val uploadAvatarUseCase: UploadAvatarUseCase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(StudentUiState())
-    val uiState = _uiState.asStateFlow()
+    val uiState: StateFlow<StudentUiState> = savedStateHandle.getStateFlow("uiState", StudentUiState())
+
+    private fun updateUiState(reducer: (StudentUiState) -> StudentUiState) {
+        savedStateHandle["uiState"] = reducer(uiState.value)
+    }
 
     init {
-        loadAllData()
+        if (uiState.value.profile == null) {
+            loadAllData()
+        }
     }
 
     fun loadAllData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            updateUiState { it.copy(isLoading = true, error = null) }
             
-            val profileRes = userRepository.getProfile()
-            val roomRes = userRepository.getRoomInfo()
-            val appRes = userRepository.getApplicationTimeline()
-            val transRes = userRepository.getPaymentHistory()
+            val profileRes = getProfileUseCase()
+            val roomRes = getRoomInfoUseCase()
+            val appRes = getApplicationTimelineUseCase()
+            val transRes = getPaymentHistoryUseCase()
 
-            _uiState.update { state ->
+            updateUiState { state ->
                 state.copy(
                     isLoading = false,
                     profile = profileRes.getOrNull(),
@@ -58,12 +71,10 @@ class StudentViewModel @Inject constructor(
 
     fun updateProfile(fullName: String, phone: String, email: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val request = UpdateProfileRequest(fullName, phone, email)
-            userRepository.updateProfile(request)
+            updateUiState { it.copy(isLoading = true) }
+            updateProfileUseCase(fullName, phone, email)
                 .onSuccess {
-                    // Cập nhật lại state cục bộ sau khi lưu thành công
-                    _uiState.update { state ->
+                    updateUiState { state ->
                         state.copy(
                             isLoading = false,
                             profile = state.profile?.copy(
@@ -76,17 +87,17 @@ class StudentViewModel @Inject constructor(
                     onSuccess()
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                    updateUiState { it.copy(isLoading = false, error = e.message) }
                 }
         }
     }
 
     fun uploadAvatar(filePath: String) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isUploading = true, uploadSuccess = false) }
-            userRepository.uploadAvatar(filePath)
+            updateUiState { it.copy(isUploading = true, uploadSuccess = false) }
+            uploadAvatarUseCase(filePath)
                 .onSuccess { newUrl ->
-                    _uiState.update { state ->
+                    updateUiState { state ->
                         state.copy(
                             isUploading = false,
                             uploadSuccess = true,
@@ -95,12 +106,12 @@ class StudentViewModel @Inject constructor(
                     }
                 }
                 .onFailure { e ->
-                    _uiState.update { it.copy(isUploading = false, error = e.message) }
+                    updateUiState { it.copy(isUploading = false, error = e.message) }
                 }
         }
     }
 
     fun clearUploadStatus() {
-        _uiState.update { it.copy(uploadSuccess = false) }
+        updateUiState { it.copy(uploadSuccess = false) }
     }
 }

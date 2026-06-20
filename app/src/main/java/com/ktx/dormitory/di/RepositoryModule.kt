@@ -1,17 +1,9 @@
 package com.ktx.dormitory.di
 
-import com.ktx.dormitory.data.repository.AccessRepositoryImpl
-import com.ktx.dormitory.data.repository.AuthRepositoryImpl
-import com.ktx.dormitory.data.repository.NotificationRepositoryImpl
-import com.ktx.dormitory.data.repository.PaymentRepositoryImpl
-import com.ktx.dormitory.data.repository.RequestRepositoryImpl
-import com.ktx.dormitory.data.repository.UserRepositoryImpl
-import com.ktx.dormitory.domain.repository.AccessRepository
-import com.ktx.dormitory.domain.repository.AuthRepository
-import com.ktx.dormitory.domain.repository.NotificationRepository
-import com.ktx.dormitory.domain.repository.PaymentRepository
-import com.ktx.dormitory.domain.repository.RequestRepository
-import com.ktx.dormitory.domain.repository.UserRepository
+import com.ktx.dormitory.data.repository.*
+import com.ktx.dormitory.data.face.repository.FaceRepositoryImpl
+import com.ktx.dormitory.domain.repository.*
+import com.ktx.dormitory.domain.face.repository.FaceRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -57,4 +49,17 @@ abstract class RepositoryModule {
     abstract fun bindAccessRepository(
         accessRepositoryImpl: AccessRepositoryImpl
     ): AccessRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFaceRepository(
+        faceRepositoryImpl: FaceRepositoryImpl
+    ): FaceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSettingsRepository(
+        settingsRepositoryImpl: SettingsRepositoryImpl
+    ): SettingsRepository
 }
+

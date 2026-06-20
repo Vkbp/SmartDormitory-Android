@@ -1,16 +1,20 @@
 package com.ktx.dormitory.domain.model
 
-import com.google.gson.annotations.SerializedName
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-enum class RequestType(val displayName: String) {
+@Parcelize
+enum class RequestType(val displayName: String) : Parcelable {
     REPAIR("Sửa chữa"),
     COMPLAINT("Khiếu nại"),
     EXTEND("Gia hạn lưu trú"),
     OTHER("Khác")
 }
 
-enum class RequestStatus { PENDING, APPROVED, REJECTED }
+@Parcelize
+enum class RequestStatus : Parcelable { PENDING, APPROVED, REJECTED }
 
+@Parcelize
 data class DormRequest(
     val id: String,
     val studentName: String?,
@@ -19,4 +23,4 @@ data class DormRequest(
     val content: String?,
     val status: RequestStatus,
     val createdAt: String?
-)
+) : Parcelable

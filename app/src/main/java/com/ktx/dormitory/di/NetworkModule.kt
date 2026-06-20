@@ -5,14 +5,12 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.ktx.dormitory.core.Constants
-import com.ktx.dormitory.data.api.AuthApiService
+import com.ktx.dormitory.data.remote.api.AuthApiService
 import com.ktx.dormitory.core.network.AuthInterceptor
+import com.ktx.dormitory.core.network.IdempotencyInterceptor
+import com.ktx.dormitory.core.network.RetryInterceptor
 import com.ktx.dormitory.core.network.TokenAuthenticator
-import com.ktx.dormitory.data.api.AccessApiService
-import com.ktx.dormitory.data.api.NotificationApiService
-import com.ktx.dormitory.data.api.PaymentApiService
-import com.ktx.dormitory.data.api.RequestApiService
-import com.ktx.dormitory.data.api.UserApiService
+import com.ktx.dormitory.data.remote.api.*
 import com.ktx.dormitory.core.network.NetworkMonitor
 import dagger.Module
 import dagger.Provides
@@ -33,16 +31,24 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
+        idempotencyInterceptor: IdempotencyInterceptor,
         tokenAuthenticator: TokenAuthenticator
     ): OkHttpClient {
         return OkHttpClient.Builder()
+            .addInterceptor(idempotencyInterceptor) // Idempotency should be outside Retry to keep same key for retries
+            .addInterceptor(RetryInterceptor(maxRetry = 2))
             .addInterceptor(authInterceptor)
             .authenticator(tokenAuthenticator)
-            // Harden network for demo stability
             .connectTimeout(Constants.NETWORK_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(Constants.NETWORK_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(Constants.NETWORK_TIMEOUT, TimeUnit.SECONDS)
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideIdempotencyInterceptor(): IdempotencyInterceptor {
+        return IdempotencyInterceptor()
     }
 
     @Provides
@@ -61,7 +67,6 @@ object NetworkModule {
         return retrofit.create(AuthApiService::class.java)
     }
 
-    // 2. THÊM HÀM NÀY ĐỂ FIX LỖI
     @Provides
     @Singleton
     fun provideNotificationApi(retrofit: Retrofit): NotificationApiService {
@@ -101,12 +106,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideEncryptedSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
-        // Tạo Master Key để mã hóa
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
 
-        // Tạo SharedPreferences bảo mật
         return EncryptedSharedPreferences.create(
             context,
             "secure_prefs",

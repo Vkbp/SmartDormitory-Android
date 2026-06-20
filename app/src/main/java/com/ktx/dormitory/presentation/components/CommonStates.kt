@@ -5,18 +5,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 @Composable
-fun LoadingView(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+fun LoadingView(
+    modifier: Modifier = Modifier,
+    message: String = "Đang tải dữ liệu...",
+    slowMessage: String = "Mạng hơi chậm, bạn đợi xíu nhé..."
+) {
+    var showSlowMessage by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(5000)
+        showSlowMessage = true
+    }
+
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         CircularProgressIndicator(strokeWidth = 3.dp)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = if (showSlowMessage) slowMessage else message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

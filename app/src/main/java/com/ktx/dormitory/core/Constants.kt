@@ -5,6 +5,9 @@ import com.ktx.dormitory.BuildConfig
 object Constants {
     val BASE_URL: String = BuildConfig.BASE_URL
 
-    // Giảm timeout xuống 5s để phát hiện lỗi IP nhanh hơn khi Demo
-    const val NETWORK_TIMEOUT = 5L // giây
+    /**
+     * Timeout 15s là điểm cân bằng giữa Reliability và UX.
+     * Cho phép mạng yếu xử lý được, nhưng không bắt người dùng đợi quá lâu.
+     */
+    const val NETWORK_TIMEOUT = 15L // giây
 }

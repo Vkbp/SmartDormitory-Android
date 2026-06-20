@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -36,9 +37,6 @@ import androidx.navigation.NavController
 import com.ktx.dormitory.presentation.components.BottomNavBar
 import com.ktx.dormitory.core.utils.ShowBiometricPrompt
 
-/**
- * Hàm hỗ trợ mở cài đặt ứng dụng để cấp lại quyền
- */
 fun openAppSettings(context: android.content.Context) {
     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
         data = Uri.fromParts("package", context.packageName, null)
@@ -54,8 +52,8 @@ fun AccessScreen(
 ) {
     val context = LocalContext.current
     val uiMessage by viewModel.uiMessage.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
-    // Hiển thị thông báo từ ViewModel
     LaunchedEffect(uiMessage) {
         uiMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -83,13 +81,14 @@ fun AccessScreen(
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Ra vào phòng") }) },
-        bottomBar = { BottomNavBar(navController) }
+        bottomBar = { BottomNavBar(navController) },
+        modifier = Modifier.testTag("access_screen")
     ) { innerPadding ->
         if (hasCameraPermission) {
-            AccessCameraContent(innerPadding, viewModel)
+            AccessCameraContent(innerPadding, viewModel, isLoading)
         } else {
             Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier.fillMaxSize().padding(innerPadding).testTag("access_permission_view"),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
@@ -98,7 +97,7 @@ fun AccessScreen(
                     Text("Chưa được cấp quyền Camera", style = MaterialTheme.typography.titleMedium)
                     Text("Cần quyền Camera để quét mã QR mở cửa.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                     Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = { openAppSettings(context) }) {
+                    Button(onClick = { openAppSettings(context) }, modifier = Modifier.testTag("access_open_settings_button")) {
                         Text("MỞ CÀI ĐẶT")
                     }
                 }
@@ -110,18 +109,18 @@ fun AccessScreen(
 @Composable
 fun AccessCameraContent(
     innerPadding: PaddingValues,
-    viewModel: AccessViewModel
+    viewModel: AccessViewModel,
+    isLoading: Boolean
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var showBiometricDialog by remember { mutableStateOf(false) }
     
-    // Quản lý trạng thái đèn Flash
     var isFlashOn by remember { mutableStateOf(false) }
     var cameraInstance by remember { mutableStateOf<Camera?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(innerPadding)
+        modifier = Modifier.fillMaxSize().padding(innerPadding).testTag("access_camera_content")
     ) {
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             AndroidView(
@@ -147,7 +146,6 @@ fun AccessCameraContent(
 
                         try {
                             cameraProvider.unbindAll()
-                            // Lưu camera instance để điều khiển Flash
                             cameraInstance = cameraProvider.bindToLifecycle(
                                 lifecycleOwner,
                                 CameraSelector.DEFAULT_BACK_CAMERA,
@@ -160,10 +158,9 @@ fun AccessCameraContent(
                     }, executor)
                     previewView
                 },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize().testTag("access_camera_preview")
             )
 
-            // Nút bật/tắt đèn Flash đè lên Camera
             IconButton(
                 onClick = {
                     isFlashOn = !isFlashOn
@@ -173,6 +170,7 @@ fun AccessCameraContent(
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
                     .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    .testTag("access_toggle_flash")
             ) {
                 Icon(
                     imageVector = if (isFlashOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
@@ -181,9 +179,8 @@ fun AccessCameraContent(
                 )
             }
             
-            // Overlay báo đang quét
-            if (viewModel.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize().testTag("access_loading_overlay"), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
@@ -206,7 +203,8 @@ fun AccessCameraContent(
                 ) {
                     FilledTonalButton(
                         onClick = { showBiometricDialog = true },
-                        enabled = !viewModel.isLoading
+                        enabled = !isLoading,
+                        modifier = Modifier.testTag("access_biometric_button")
                     ) {
                         Text("DÙNG VÂN TAY")
                     }

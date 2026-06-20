@@ -1,53 +1,76 @@
 package com.ktx.dormitory.presentation.features.payment
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ktx.dormitory.domain.model.PaymentStatus
-import com.ktx.dormitory.domain.repository.PaymentRepository
+import com.ktx.dormitory.domain.usecase.payment.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
-    private val repository: PaymentRepository
+    private val getInvoicesUseCase: GetInvoicesUseCase,
+    private val verifyPaymentUseCase: VerifyPaymentUseCase,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<PaymentUiState>(PaymentUiState.Loading)
-    val uiState: StateFlow<PaymentUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<PaymentUiState> = savedStateHandle.getStateFlow("uiState", PaymentUiState.Loading)
+    
+    val errorEvent: StateFlow<String?> = savedStateHandle.getStateFlow("errorEvent", null)
+
+    private fun updateUiState(state: PaymentUiState) {
+        savedStateHandle["uiState"] = state
+    }
+
+    private fun setErrorEvent(error: String?) {
+        savedStateHandle["errorEvent"] = error
+    }
+
+    private val actionMutex = Mutex()
 
     init {
-        loadInvoices()
+        if (uiState.value is PaymentUiState.Loading) {
+            loadInvoices()
+        }
     }
 
     fun loadInvoices() {
         viewModelScope.launch {
-            _uiState.value = PaymentUiState.Loading
-            repository.getInvoices()
+            updateUiState(PaymentUiState.Loading)
+            getInvoicesUseCase()
                 .onSuccess { data ->
                     val total = data.filter { it.status == PaymentStatus.UNPAID }.sumOf { it.amount }
-                    _uiState.value = PaymentUiState.Success(data, total)
+                    updateUiState(PaymentUiState.Success(data, total))
                 }
                 .onFailure {
-                    _uiState.value = PaymentUiState.Error(it.message ?: "Lỗi tải hóa đơn")
+                    updateUiState(PaymentUiState.Error(it.message ?: "Lỗi tải hóa đơn"))
                 }
         }
     }
 
     fun verifyPayment(invoiceId: String) {
         viewModelScope.launch {
-            // Hiển thị loading nhẹ hoặc giữ nguyên state cũ nhưng khóa UI
-            repository.verifyPayment(invoiceId)
-                .onSuccess {
-                    // Tải lại danh sách để cập nhật trạng thái PAID
-                    loadInvoices()
-                }
-                .onFailure {
-                    // Có thể thông báo qua Toast hoặc Snackbar
-                }
+            // Ngăn chặn spam click bằng Mutex
+            if (actionMutex.isLocked) return@launch
+            
+            actionMutex.withLock {
+                verifyPaymentUseCase(invoiceId)
+                    .onSuccess {
+                        loadInvoices()
+                    }
+                    .onFailure {
+                        setErrorEvent(it.message ?: "Xác thực thanh toán thất bại")
+                    }
+            }
         }
+    }
+
+    fun clearError() {
+        setErrorEvent(null)
     }
 }

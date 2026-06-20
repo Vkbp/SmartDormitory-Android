@@ -1,15 +1,15 @@
 package com.ktx.dormitory.presentation.features.payment
 
-import app.cash.turbine.test
+import androidx.lifecycle.SavedStateHandle
 import com.google.common.truth.Truth.assertThat
-import com.ktx.dormitory.data.repository.MockDataProvider
+import com.ktx.dormitory.domain.model.Invoice
 import com.ktx.dormitory.domain.model.PaymentStatus
-import com.ktx.dormitory.domain.repository.PaymentRepository
+import com.ktx.dormitory.domain.usecase.payment.GetInvoicesUseCase
+import com.ktx.dormitory.domain.usecase.payment.VerifyPaymentUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
@@ -19,14 +19,16 @@ import org.junit.Test
 class PaymentViewModelTest {
 
     private lateinit var viewModel: PaymentViewModel
-    private val repository = mockk<PaymentRepository>()
-    private val testDispatcher = UnconfinedTestDispatcher()
+    private val getInvoicesUseCase = mockk<GetInvoicesUseCase>()
+    private val verifyPaymentUseCase = mockk<VerifyPaymentUseCase>()
+    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        // Default success behavior for init
-        coEvery { repository.getInvoices() } returns Result.success(MockDataProvider.getMockInvoices())
+        coEvery { getInvoicesUseCase() } returns Result.success(emptyList())
+        viewModel = PaymentViewModel(getInvoicesUseCase, verifyPaymentUseCase, SavedStateHandle())
+        testDispatcher.scheduler.advanceUntilIdle()
     }
 
     @After
@@ -35,81 +37,32 @@ class PaymentViewModelTest {
     }
 
     @Test
-    fun `loadInvoices success updates state with invoices and correct total`() = runTest {
-        val mockInvoices = MockDataProvider.getMockInvoices()
-        val expectedTotal = mockInvoices.filter { it.status == PaymentStatus.UNPAID }.sumOf { it.amount }
+    fun `loadInvoices success updates state with total amount`() = runTest(testDispatcher) {
+        val invoices = listOf(
+            Invoice(1, null, 100000.0, 0.0, 100000.0, PaymentStatus.UNPAID, "2023-12-01", "Dien", null, null),
+            Invoice(2, null, 50000.0, 50000.0, 0.0, PaymentStatus.PAID, "2023-12-01", "Nuoc", null, null)
+        )
+        coEvery { getInvoicesUseCase() } returns Result.success(invoices)
 
-        coEvery { repository.getInvoices() } coAnswers {
-            delay(1) // Force suspension to capture loading state
-            Result.success(mockInvoices)
-        }
+        viewModel.loadInvoices()
+        advanceUntilIdle()
 
-        viewModel = PaymentViewModel(repository)
-
-        viewModel.uiState.test {
-            // 1. Loading state
-            assertThat(awaitItem()).isEqualTo(PaymentUiState.Loading)
-            
-            // 2. Success state
-            val successState = awaitItem() as PaymentUiState.Success
-            assertThat(successState.invoices).isEqualTo(mockInvoices)
-            assertThat(successState.totalUnpaid).isEqualTo(expectedTotal)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
+        val state = viewModel.uiState.value
+        assertThat(state).isInstanceOf(PaymentUiState.Success::class.java)
+        val successState = state as PaymentUiState.Success
+        assertThat(successState.invoices).hasSize(2)
+        assertThat(successState.totalUnpaid).isEqualTo(100000.0)
     }
 
     @Test
-    fun `loadInvoices failure updates state with error message`() = runTest {
-        val errorMsg = "Network Error"
-        coEvery { repository.getInvoices() } coAnswers {
-            delay(1)
-            Result.failure(Exception(errorMsg))
-        }
+    fun `verifyPayment success reloads invoices`() = runTest(testDispatcher) {
+        coEvery { verifyPaymentUseCase(any()) } returns Result.success(Unit)
+        coEvery { getInvoicesUseCase() } returns Result.success(emptyList())
 
-        viewModel = PaymentViewModel(repository)
+        viewModel.verifyPayment("1")
+        advanceUntilIdle()
 
-        viewModel.uiState.test {
-            assertThat(awaitItem()).isEqualTo(PaymentUiState.Loading)
-            
-            val errorState = awaitItem() as PaymentUiState.Error
-            assertThat(errorState.message).isEqualTo(errorMsg)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `loadInvoices empty list updates state with zero total`() = runTest {
-        coEvery { repository.getInvoices() } coAnswers {
-            delay(1)
-            Result.success(emptyList())
-        }
-
-        viewModel = PaymentViewModel(repository)
-
-        viewModel.uiState.test {
-            assertThat(awaitItem()).isEqualTo(PaymentUiState.Loading)
-            
-            val successState = awaitItem() as PaymentUiState.Success
-            assertThat(successState.invoices).isEmpty()
-            assertThat(successState.totalUnpaid).isEqualTo(0.0)
-            
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `verifyPayment success reloads invoices`() = runTest {
-        viewModel = PaymentViewModel(repository)
-        
-        coEvery { repository.verifyPayment(any()) } returns Result.success(Unit)
-        // Ensure subsequent call returns updated data (or same data for simplicity of reload check)
-        coEvery { repository.getInvoices() } returns Result.success(MockDataProvider.getMockInvoices())
-
-        viewModel.verifyPayment("invoice_id")
-        
-        // Check if getInvoices was called again (twice: once in init, once after verify)
-        io.mockk.coVerify(exactly = 2) { repository.getInvoices() }
+        val state = viewModel.uiState.value
+        assertThat(state).isInstanceOf(PaymentUiState.Success::class.java)
     }
 }

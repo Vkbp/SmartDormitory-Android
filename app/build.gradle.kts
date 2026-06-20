@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp) // Add this line
+    alias(libs.plugins.kotlin.parcelize)
     id("com.google.dagger.hilt.android")  // Thêm dòng này
 }
 android {
@@ -18,7 +19,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.ktx.dormitory.HiltTestRunner"
         
         // Cấu hình BASE_URL linh hoạt: local.properties > gradle.properties > Default
         val props = Properties()
@@ -102,7 +103,12 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52") // Đảm bảo dòng này dùng ksp, không phải kapt
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
     implementation("javax.inject:javax.inject:1")
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime)
 
     // Biometric
     implementation("androidx.biometric:biometric:1.1.0")
@@ -146,9 +152,12 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
     testImplementation(libs.truth)
+    testImplementation(libs.okhttp.mockwebserver)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.truth)
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.52")
+    kspAndroidTest("com.google.dagger:hilt-compiler:2.52")
     androidTestImplementation("io.mockk:mockk-android:1.13.10")
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

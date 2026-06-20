@@ -1,17 +1,12 @@
 package com.ktx.dormitory.presentation.features.access
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ktx.dormitory.domain.model.AccessLog
 import com.ktx.dormitory.domain.repository.AccessRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,17 +18,21 @@ class AccessViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    var isLoading by mutableStateOf(false)
-        private set
+    val isLoading: StateFlow<Boolean> = savedStateHandle.getStateFlow("isLoading", false)
+    val error: StateFlow<String?> = savedStateHandle.getStateFlow("error", null)
+    val uiMessage: StateFlow<String?> = savedStateHandle.getStateFlow("ui_message", null)
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private fun setLoading(loading: Boolean) {
+        savedStateHandle["isLoading"] = loading
+    }
 
-    // Key để lưu state qua quá trình recreation
-    private val KEY_UI_MESSAGE = "ui_message"
+    private fun setError(error: String?) {
+        savedStateHandle["error"] = error
+    }
 
-    // Sử dụng StateFlow từ SavedStateHandle để đảm bảo message không mất khi xoay màn hình/process death
-    val uiMessage: StateFlow<String?> = savedStateHandle.getStateFlow(KEY_UI_MESSAGE, null)
+    private fun setUiMessage(message: String?) {
+        savedStateHandle["ui_message"] = message
+    }
 
     // Observe logs từ Room
     val accessHistory: StateFlow<List<AccessLog>> = repository.accessLogs
@@ -44,36 +43,38 @@ class AccessViewModel @Inject constructor(
         )
 
     init {
-        fetchAccessHistory()
+        if (accessHistory.value.isEmpty()) {
+            fetchAccessHistory()
+        }
     }
 
     fun fetchAccessHistory() {
         viewModelScope.launch {
-            _error.value = null
-            isLoading = true
+            setError(null)
+            setLoading(true)
             repository.getAccessHistory()
-                .onFailure { _error.value = it.message }
-            isLoading = false
+                .onFailure { setError(it.message) }
+            setLoading(false)
         }
     }
 
     fun verifyQrCode(code: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            isLoading = true
-            repository.verifyQr(code)
+            setLoading(true)
+            repository.verifyQrCode(code)
                 .onSuccess {
-                    savedStateHandle[KEY_UI_MESSAGE] = "Mở cửa thành công!"
+                    setUiMessage("Mở cửa thành công!")
                     onSuccess()
                     fetchAccessHistory() // Load lại lịch sử sau khi ra vào
                 }
                 .onFailure {
-                    savedStateHandle[KEY_UI_MESSAGE] = it.message ?: "Mã QR không hợp lệ"
+                    setUiMessage(it.message ?: "Mã QR không hợp lệ")
                 }
-            isLoading = false
+            setLoading(false)
         }
     }
 
     fun clearMessage() {
-        savedStateHandle[KEY_UI_MESSAGE] = null
+        setUiMessage(null)
     }
 }

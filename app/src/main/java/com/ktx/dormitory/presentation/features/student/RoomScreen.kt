@@ -6,21 +6,21 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ktx.dormitory.presentation.components.LoadingView
 import com.ktx.dormitory.presentation.components.ErrorView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoomScreen(navController: NavController, viewModel: StudentViewModel) {
-    val uiState by viewModel.uiState.collectAsState()
+fun RoomScreen(navController: NavController, viewModel: RoomViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -41,7 +41,7 @@ fun RoomScreen(navController: NavController, viewModel: StudentViewModel) {
                 uiState.isLoading -> LoadingView()
                 error != null -> ErrorView(
                     message = error,
-                    onRetry = { viewModel.loadAllData() }
+                    onRetry = { viewModel.loadRoomInfo() }
                 )
                 room != null -> {
                     Column(modifier = Modifier.padding(16.dp)) {

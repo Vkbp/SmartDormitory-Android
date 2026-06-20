@@ -1,17 +1,17 @@
 package com.ktx.dormitory.data.local
 
+import com.ktx.dormitory.data.local.datasource.AuthLocalDataSource
 import android.content.SharedPreferences
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TokenManager @Inject constructor(
     private val sharedPreferences: SharedPreferences
-) {
+) : AuthLocalDataSource {
     companion object {
         private const val ACCESS_TOKEN_KEY = "access_token"
         private const val REFRESH_TOKEN_KEY = "refresh_token"
@@ -47,17 +47,15 @@ class TokenManager @Inject constructor(
     }
 
     // Các biến Flow dùng cho UI/Authenticator (Giữ nguyên tên cũ)
-    val accessToken: Flow<String?> = getFlowForKey(ACCESS_TOKEN_KEY, "")
-    val refreshToken: Flow<String?> = getFlowForKey(REFRESH_TOKEN_KEY, "")
-    val isPaid: Flow<Boolean> = getFlowForKey(IS_PAID_KEY, false)
+    override val accessToken: Flow<String?> = getFlowForKey(ACCESS_TOKEN_KEY, "")
+    override val refreshToken: Flow<String?> = getFlowForKey(REFRESH_TOKEN_KEY, "")
+    override val isPaid: Flow<Boolean> = getFlowForKey(IS_PAID_KEY, false)
 
-    // Synchronous access for Interceptors (Performance improvement)
-    fun getAccessTokenSync(): String? = sharedPreferences.getString(ACCESS_TOKEN_KEY, "")
-    fun getRefreshTokenSync(): String? = sharedPreferences.getString(REFRESH_TOKEN_KEY, "")
+    override fun getAccessTokenSync(): String? = sharedPreferences.getString(ACCESS_TOKEN_KEY, "")
+    override fun getRefreshTokenSync(): String? = sharedPreferences.getString(REFRESH_TOKEN_KEY, "")
 
-    // Lưu Token bảo mật
-    fun saveTokens(access: String, refresh: String) {
-        sharedPreferences.edit().apply {
+    override fun saveTokens(access: String, refresh: String) {
+    sharedPreferences.edit().apply {
             putString(ACCESS_TOKEN_KEY, access)
             putString(REFRESH_TOKEN_KEY, refresh)
             apply()
@@ -65,12 +63,12 @@ class TokenManager @Inject constructor(
     }
 
     // Lưu trạng thái thanh toán bảo mật
-    fun savePaymentStatus(paid: Boolean) {
+    override fun savePaymentStatus(paid: Boolean) {
         sharedPreferences.edit().putBoolean(IS_PAID_KEY, paid).apply()
     }
 
     // Xóa sạch dữ liệu (Logout)
-    fun clearTokens(keepRefreshToken: Boolean = false) {
+    override fun clearTokens(keepRefreshToken: Boolean) {
         sharedPreferences.edit().apply {
             remove(ACCESS_TOKEN_KEY)
             if (!keepRefreshToken) {

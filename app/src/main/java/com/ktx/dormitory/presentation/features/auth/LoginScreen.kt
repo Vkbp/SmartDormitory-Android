@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ktx.dormitory.navigation.Screen
 import com.ktx.dormitory.core.utils.checkBiometricSupport
@@ -24,7 +25,7 @@ fun LoginScreen(navController: NavController,
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val uiState by loginViewModel.uiState.collectAsState()
+    val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
 
     var mssv by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -113,7 +114,7 @@ fun LoginScreen(navController: NavController,
             Button(
                 onClick = {
                     loginViewModel.performLogin(
-                        username = mssv,
+                        usernameOrEmail = mssv,
                         password = password,
                         onSuccess = { role ->
                             val userRole = role.uppercase()
