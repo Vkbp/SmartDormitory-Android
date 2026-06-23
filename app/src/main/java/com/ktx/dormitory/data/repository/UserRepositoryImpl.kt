@@ -104,7 +104,11 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun getApplicationTimeline(): Result<DormApplication> {
         return try {
-            val response = remoteDataSource.getMyApplication()
+            // Cần CCCD để tra cứu đơn đăng ký. Lấy từ Profile đã cache.
+            val profile = localDataSource.getProfile().firstOrNull()
+            val cccd = profile?.cccd ?: return Result.failure(Exception("Vui lòng tải hồ sơ trước khi xem đơn đăng ký"))
+
+            val response = remoteDataSource.getMyApplication(cccd)
             if (response.success && response.data != null) {
                 Result.success(response.data.toDomain())
             } else {
@@ -122,19 +126,6 @@ class UserRepositoryImpl @Inject constructor(
                 Result.success(response.data.map { it.toDomain() })
             } else {
                 Result.failure(Exception(response.message))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun getMyBills(): Result<List<Invoice>> {
-        return try {
-            val response = remoteDataSource.getMyBills()
-            if (response.success && response.data != null) {
-                Result.success(response.data.map { it.toDomain() })
-            } else {
-                Result.failure(Exception("Không có dữ liệu hóa đơn"))
             }
         } catch (e: Exception) {
             Result.failure(e)

@@ -26,17 +26,6 @@ abstract class RepositoryModule {
         authRepositoryImpl: AuthRepositoryImpl
     ): AuthRepository
 
-    @Binds
-    @Singleton
-    abstract fun bindNotificationRepository(
-        notificationRepositoryImpl: NotificationRepositoryImpl
-    ): NotificationRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindRequestRepository(
-        requestRepositoryImpl: RequestRepositoryImpl
-    ): RequestRepository
 
     @Binds
     @Singleton

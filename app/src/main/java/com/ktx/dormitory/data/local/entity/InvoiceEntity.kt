@@ -5,14 +5,14 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "invoices")
 data class InvoiceEntity(
-    @PrimaryKey val id: Long,
+    @PrimaryKey val id: String,  // UUID from backend
     val type: String?,
-    val amount: Double,
-    val paidAmount: Double,
-    val remainingAmount: Double,
+    val amount: Double?,
+    val paidAmount: Double?,
+    val remainingAmount: Double?,
     val status: String?,
     val dueDate: String?,
-    val description: String,
+    val description: String?,
     val roomCode: String?,
     val bedCode: String?
 )

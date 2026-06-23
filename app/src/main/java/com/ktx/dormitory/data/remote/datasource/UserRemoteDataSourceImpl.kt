@@ -15,7 +15,6 @@ class UserRemoteDataSourceImpl @Inject constructor(
     override suspend fun updateProfile(request: UpdateProfileRequest) = api.updateProfile(request)
     override suspend fun uploadAvatar(file: MultipartBody.Part) = api.uploadAvatar(file)
     override suspend fun getMyRoom() = api.getMyRoom()
-    override suspend fun getMyApplication() = api.getMyApplication()
+    override suspend fun getMyApplication(cccd: String) = api.getMyApplication(cccd)
     override suspend fun getPaymentHistory() = api.getPaymentHistory()
-    override suspend fun getMyBills() = api.getMyBills()
 }

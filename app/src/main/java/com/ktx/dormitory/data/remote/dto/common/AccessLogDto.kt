@@ -4,9 +4,11 @@ import com.google.gson.annotations.SerializedName
 
 data class AccessLogDto(
     @SerializedName("id") val id: String,
-    @SerializedName("userId") val userId: String?,
-    @SerializedName("location") val location: String?,
-    @SerializedName("timestamp") val timestamp: String?,
-    @SerializedName("isSuccess") val isSuccess: Boolean,
+    @SerializedName("studentId") val studentId: String?,
+    @SerializedName("gateId") val gateId: String?,
+    @SerializedName("buildingId") val buildingId: String?,
+    @SerializedName("eventTimestamp") val eventTimestamp: String?,
+    @SerializedName("decision") val decision: String?,
+    @SerializedName("denialReason") val denialReason: String?,
     @SerializedName("method") val method: String?
 )

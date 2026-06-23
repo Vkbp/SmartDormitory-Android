@@ -44,20 +44,17 @@ class PaymentRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun verifyPayment(invoiceId: String): Result<Unit> {
+    override suspend fun verifyPayment(
+        billId: String,
+        amount: Double,
+        paymentMethod: String,
+        transactionCode: String
+    ): Result<Unit> {
         return try {
-            val isOnline = networkMonitor.isOnline.first()
-            if (!isOnline) {
-                return queueAction("VERIFY_PAYMENT", invoiceId)
-            }
-            val response = remoteDataSource.verifyPayment(invoiceId)
+            val response = remoteDataSource.verifyPayment(billId, amount, paymentMethod, transactionCode)
             if (response.success) Result.success(Unit) else Result.failure(Exception(response.message))
         } catch (e: Exception) {
-            if (isNetworkException(e)) {
-                queueAction("VERIFY_PAYMENT", invoiceId)
-            } else {
-                Result.failure(e)
-            }
+            Result.failure(e)
         }
     }
 

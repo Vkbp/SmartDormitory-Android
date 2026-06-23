@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccessLogDao {
-    @Query("SELECT * FROM access_logs ORDER BY timestamp DESC")
+    @Query("SELECT * FROM access_logs ORDER BY eventTimestamp DESC")
     fun getAllLogs(): Flow<List<AccessLogEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,7 +47,7 @@ fun PaymentHistoryScreen(navController: NavController, viewModel: PaymentHistory
                     message = uiState.error ?: "Lỗi không xác định",
                     onRetry = { viewModel.loadPaymentHistory() }
                 )
-                uiState.transactions.isEmpty() -> EmptyView(message = "Chưa có giao dịch nào", icon = Icons.Default.ReceiptLong)
+                uiState.transactions.isEmpty() -> EmptyView(message = "Chưa có giao dịch nào", icon = Icons.AutoMirrored.Filled.ReceiptLong)
                 else -> {
                     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
                         items(uiState.transactions) { transaction ->
@@ -62,7 +62,8 @@ fun PaymentHistoryScreen(navController: NavController, viewModel: PaymentHistory
 
 @Composable
 fun TransactionItem(transaction: Transaction) {
-    val statusColor = if (transaction.status == "THÀNH CÔNG") Color(0xFF4CAF50) else Color(0xFFF44336)
+    val isSuccess = transaction.status?.uppercase() == "PAID"
+    val statusColor = if (isSuccess) Color(0xFF4CAF50) else Color(0xFFF44336)
     
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -75,7 +76,7 @@ fun TransactionItem(transaction: Transaction) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(transaction.type ?: "Giao dịch", fontWeight = FontWeight.Bold)
-                Text("Mã GD: ${transaction.transactionId ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
+                Text("Mã GD: ${transaction.transactionCode ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
                 Text(
                     text = DateTimeUtils.formatIsoDate(transaction.createdAt), 
                     style = MaterialTheme.typography.bodySmall, 
@@ -89,7 +90,13 @@ fun TransactionItem(transaction: Transaction) {
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = transaction.status ?: "ĐANG XỬ LÝ",
+                    text = when(transaction.status?.uppercase()) {
+                        "PAID" -> "THÀNH CÔNG"
+                        "UNPAID" -> "CHƯA THANH TOÁN"
+                        "PARTIALLY_PAID" -> "MỘT PHẦN"
+                        "CANCELLED" -> "ĐÃ HỦY"
+                        else -> transaction.status ?: "ĐANG XỬ LÝ"
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = statusColor,
                     fontWeight = FontWeight.Bold

@@ -5,9 +5,11 @@ import com.ktx.dormitory.domain.model.AccessLog
 
 fun AccessLogDto.toDomain() = AccessLog(
     id = id,
-    userId = userId,
-    location = location,
-    timestamp = timestamp,
-    isSuccess = isSuccess,
+    studentId = studentId,
+    gateId = gateId,
+    buildingId = buildingId,
+    eventTimestamp = eventTimestamp,
+    decision = decision,
+    denialReason = denialReason,
     method = method
 )

@@ -1,51 +1,34 @@
 package com.ktx.dormitory.presentation.features.student
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.ktx.dormitory.domain.model.RequestType
-import com.ktx.dormitory.presentation.features.request.RequestViewModel
 
+/**
+ * QuickExtendScreen - Màn hình gia hạn lưu trú.
+ *
+ * BACKEND NOTE: API POST /requests (Request/Extend) KHÔNG TỒN TẠI trên Backend.
+ * Màn hình này chỉ hiển thị thông báo hướng dẫn liên hệ trực tiếp ban quản lý.
+ * RequestViewModel đã bị xóa vì không có Backend API tương ứng.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuickExtendScreen(
-    navController: NavController,
-    viewModel: RequestViewModel = hiltViewModel()
-) {
-    var semesterCount by remember { mutableStateOf("1") }
-    var note by remember { mutableStateOf("") }
-    val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Theo dõi trạng thái thành công để quay lại màn hình trước
-    LaunchedEffect(uiState.submitSuccess) {
-        if (uiState.submitSuccess) {
-            Toast.makeText(context, "Đã gửi yêu cầu gia hạn thành công!", Toast.LENGTH_SHORT).show()
-            viewModel.clearStatus()
-            navController.popBackStack()
-        }
-    }
-
+fun QuickExtendScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Gia hạn lưu trú", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
                     }
                 }
             )
@@ -55,60 +38,41 @@ fun QuickExtendScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                "Đăng ký tiếp tục nội trú tại KTX cho học kỳ tiếp theo.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            OutlinedTextField(
-                value = semesterCount,
-                onValueChange = { if (it.all { char -> char.isDigit() }) semesterCount = it },
-                label = { Text("Số học kỳ muốn gia hạn") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                prefix = { Text("Học kỳ: ") }
+            Text(
+                text = "Chức năng đang phát triển",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            OutlinedTextField(
-                value = note,
-                onValueChange = { note = it },
-                label = { Text("Lý do / Ghi chú thêm") },
-                placeholder = { Text("Ví dụ: Em muốn ở tiếp kỳ hè...") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
-                maxLines = 5
+            Text(
+                text = "Để gia hạn lưu trú, vui lòng liên hệ trực tiếp Ban Quản lý Ký túc xá hoặc nộp đơn tại văn phòng ký túc xá.",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
-                onClick = {
-                    if (semesterCount.isBlank()) {
-                        Toast.makeText(context, "Vui lòng nhập số học kỳ", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-                    val content = "Yêu cầu gia hạn $semesterCount học kỳ. Ghi chú: $note"
-                    viewModel.onTypeChange(RequestType.EXTEND)
-                    viewModel.onContentChange(content)
-                    viewModel.submitRequest()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isSubmitting,
-                shape = MaterialTheme.shapes.medium
+            OutlinedButton(
+                onClick = { navController.popBackStack() },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (uiState.isSubmitting) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                } else {
-                    Text("GỬI YÊU CẦU GIA HẠN")
-                }
+                Text("Quay lại")
             }
         }
     }

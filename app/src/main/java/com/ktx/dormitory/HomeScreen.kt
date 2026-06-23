@@ -69,25 +69,14 @@ fun HomeScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            val isStudent = userData?.role?.uppercase() == "STUDENT" || userData?.role?.uppercase() == "USER"
-            
             WelcomeSection(
                 name = userData?.fullName ?: "Người dùng",
-                room = if (isStudent) (roomState.roomInfo?.roomCode ?: "...") else null, // ẨN PHÒNG NẾU LÀ ADMIN
-                onRoomClick = { if (isStudent) navController.navigate(Screen.RoomInfo.route) }
+                room = roomState.roomInfo?.roomCode ?: "...",
+                onRoomClick = { navController.navigate(Screen.RoomInfo.route) }
             )
 
             Column(modifier = Modifier.padding(16.dp)) {
-                when (userData?.role?.uppercase()) {
-                    "USER", "STUDENT" -> StudentDashboard(navController)
-                    "STAFF" -> StaffDashboard(navController)
-                    "ADMIN" -> AdminDashboard(navController)
-                    else -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
+                StudentDashboard(navController)
             }
         }
     }
@@ -151,41 +140,11 @@ fun StudentDashboard(navController: NavController) {
     DashboardGrid(
         title = "Tiện ích sinh viên",
         items = listOf(
-            DashboardItem("Xác thực AI", Icons.Default.Face, Screen.FaceVerification.route),
             DashboardItem("Đăng ký AI", Icons.Default.PersonAdd, Screen.FaceRegistration.route),
-            DashboardItem("Ra vào QR", Icons.Default.QrCode, Screen.Access.route),
             DashboardItem("Thanh toán", Icons.Default.Payments, Screen.Payment.route),
             DashboardItem("Lịch sử GD", Icons.AutoMirrored.Filled.ReceiptLong, Screen.PaymentHistory.route),
             DashboardItem("Tiến độ đơn", Icons.Default.Timeline, Screen.ApplicationStatus.route),
-            DashboardItem("Gửi yêu cầu", Icons.AutoMirrored.Filled.Send, Screen.Request.route),
             DashboardItem("Lịch sử vào", Icons.Default.History, Screen.AccessHistory.route)
-        ),
-        navController = navController
-    )
-}
-
-@Composable
-fun StaffDashboard(navController: NavController) {
-    DashboardGrid(
-        title = "Quản lý nhân viên",
-        items = listOf(
-            DashboardItem("Duyệt yêu cầu", Icons.Default.AssignmentTurnedIn, Screen.StaffApproval.route),
-            DashboardItem("Quản lý phòng", Icons.Default.MeetingRoom, Screen.StaffRoomManage.route),
-            DashboardItem("Gửi thông báo", Icons.Default.Campaign, Screen.Notifications.route),
-            DashboardItem("Điện nước", Icons.Default.WaterDrop, Screen.StaffWaterElectric.route)
-        ),
-        navController = navController
-    )
-}
-
-@Composable
-fun AdminDashboard(navController: NavController) {
-    DashboardGrid(
-        title = "Hệ thống Admin",
-        items = listOf(
-            DashboardItem("Người dùng", Icons.Default.People, Screen.AdminUsers.route),
-            DashboardItem("Thống kê", Icons.Default.Analytics, Screen.AdminStats.route),
-            DashboardItem("Cài đặt", Icons.Default.Settings, Screen.AdminSettings.route)
         ),
         navController = navController
     )

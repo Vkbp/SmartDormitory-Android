@@ -38,16 +38,19 @@ fun StudentResponse.toEntity(): UserProfileEntity {
         id = this.id ?: "",
         studentCode = this.studentCode ?: "",
         fullName = this.fullName ?: "",
-        citizenId = this.citizenId ?: "",
-        gender = this.gender ?: "",
-        birthDate = this.birthDate ?: "",
+        cccd = this.citizenId ?: "",
         faculty = this.faculty ?: "",
-        course = this.course ?: "",
+        academicYear = this.academicYear ?: "",
         phone = this.phone ?: "",
         email = this.email ?: "",
         permanentAddress = this.permanentAddress ?: "",
-        role = this.role ?: "",
-        avatarUrl = this.avatarUrl
+        avatarUrl = this.avatarUrl,
+        fatherName = this.fatherName,
+        fatherPhone = this.fatherPhone,
+        motherName = this.motherName,
+        motherPhone = this.motherPhone,
+        emergencyContact = this.emergencyContact,
+        status = this.status
     )
 }
 
@@ -56,16 +59,19 @@ fun UserProfileEntity.toDomain(): UserProfile {
         id = this.id,
         studentCode = this.studentCode,
         fullName = this.fullName,
-        citizenId = this.citizenId,
-        gender = this.gender,
-        birthDate = this.birthDate,
+        citizenId = this.cccd,
         faculty = this.faculty,
-        course = this.course,
+        academicYear = this.academicYear,
         phone = this.phone,
         email = this.email,
         permanentAddress = this.permanentAddress,
-        role = this.role,
-        avatarUrl = this.avatarUrl
+        avatarUrl = this.avatarUrl,
+        fatherName = this.fatherName,
+        fatherPhone = this.fatherPhone,
+        motherName = this.motherName,
+        motherPhone = this.motherPhone,
+        emergencyContact = this.emergencyContact,
+        status = this.status
     )
 }
 
@@ -74,16 +80,19 @@ fun UserProfile.toEntity(): UserProfileEntity {
         id = this.id ?: "",
         studentCode = this.studentCode ?: "",
         fullName = this.fullName ?: "",
-        citizenId = this.citizenId ?: "",
-        gender = this.gender ?: "",
-        birthDate = this.birthDate ?: "",
+        cccd = this.citizenId ?: "",
         faculty = this.faculty ?: "",
-        course = this.course ?: "",
+        academicYear = this.academicYear ?: "",
         phone = this.phone ?: "",
         email = this.email ?: "",
         permanentAddress = this.permanentAddress ?: "",
-        role = this.role ?: "",
-        avatarUrl = this.avatarUrl
+        avatarUrl = this.avatarUrl,
+        fatherName = this.fatherName,
+        fatherPhone = this.fatherPhone,
+        motherName = this.motherName,
+        motherPhone = this.motherPhone,
+        emergencyContact = this.emergencyContact,
+        status = this.status
     )
 }
 
@@ -101,11 +110,21 @@ fun TransactionDto.toDomain(): Transaction {
     return Transaction(
         transactionId = this.transactionId,
         amount = this.amount,
-        method = this.method,
+        method = when (this.type?.uppercase()) {
+            "ACCOMMODATION_FEE", "ROOM" -> "Phí phòng"
+            "ELECTRIC_FEE", "ELECTRICITY" -> "Tiền điện"
+            "WATER_FEE", "WATER" -> "Tiền nước"
+            "SERVICE_FEE", "SERVICE" -> "Phí dịch vụ"
+            "APPLICATION_FEE" -> "Lệ phí đơn"
+            "PENALTY_FEE" -> "Tiền phạt"
+            "DEPOSIT_FEE" -> "Tiền cọc"
+            else -> this.type ?: "Hóa đơn"
+        },
         status = this.status,
-        createdAt = this.createdAt,
+        createdAt = this.createdAt, // backend trả về dueDate làm mốc thời gian
         type = this.type,
-        message = this.message
+        message = this.message, // Chứa studentName hoặc mô tả từ backend
+        transactionCode = this.transactionCode
     )
 }
 
@@ -114,8 +133,8 @@ fun DormApplicationDto.toDomain(): DormApplication {
         applicationCode = this.applicationCode,
         status = this.status,
         submissionDate = this.submissionDate,
-        paymentDeadline = this.paymentDeadline,
-        timeline = this.timeline.map { it.toDomain() }
+        paymentDeadline = this.revisionDeadline, // Backend dùng revisionDeadline làm mốc xử lý tiếp theo
+        timeline = emptyList() // Backend hiện trả về list phẳng, không có timeline nested phức tạp
     )
 }
 
@@ -135,26 +154,30 @@ fun TimelineStepDto.toDomain(): TimelineStep {
 
 fun InvoiceDto.toDomain(): Invoice {
     return Invoice(
-        id = this.id ?: 0L,
+        id = this.id,
         type = when (this.type?.uppercase()) {
             "ACCOMMODATION_FEE", "ROOM" -> InvoiceType.ROOM
-            "ELECTRICITY" -> InvoiceType.ELECTRICITY
-            "WATER" -> InvoiceType.WATER
-            "SERVICE_FEE" -> InvoiceType.SERVICE
+            "ELECTRIC_FEE", "ELECTRICITY" -> InvoiceType.ELECTRICITY
+            "WATER_FEE", "WATER" -> InvoiceType.WATER
+            "SERVICE_FEE", "SERVICE" -> InvoiceType.SERVICE
+            "APPLICATION_FEE" -> InvoiceType.APPLICATION
+            "PENALTY_FEE" -> InvoiceType.PENALTY
+            "DEPOSIT_FEE" -> InvoiceType.DEPOSIT
             else -> null
         },
-        amount = this.amount ?: 0.0,
-        paidAmount = this.paidAmount ?: 0.0,
-        remainingAmount = this.remainingAmount ?: 0.0,
+        amount = this.amount,
+        paidAmount = this.paidAmount,
+        remainingAmount = this.remainingAmount,
         status = when (this.status?.uppercase()) {
             "UNPAID" -> PaymentStatus.UNPAID
             "PARTIALLY_PAID" -> PaymentStatus.PARTIALLY_PAID
             "PAID" -> PaymentStatus.PAID
             "OVERDUE" -> PaymentStatus.OVERDUE
+            "CANCELLED" -> PaymentStatus.CANCELLED
             else -> null
         },
         dueDate = this.dueDate,
-        description = this.description ?: "",
+        description = this.description,
         roomCode = this.roomCode,
         bedCode = this.bedCode
     )
@@ -162,14 +185,14 @@ fun InvoiceDto.toDomain(): Invoice {
 
 fun InvoiceDto.toEntity(): InvoiceEntity {
     return InvoiceEntity(
-        id = this.id ?: 0L,
+        id = this.id,
         type = this.type,
-        amount = this.amount ?: 0.0,
-        paidAmount = this.paidAmount ?: 0.0,
-        remainingAmount = this.remainingAmount ?: 0.0,
+        amount = this.amount,
+        paidAmount = this.paidAmount,
+        remainingAmount = this.remainingAmount,
         status = this.status,
         dueDate = this.dueDate,
-        description = this.description ?: "",
+        description = this.description,
         roomCode = this.roomCode,
         bedCode = this.bedCode
     )
@@ -177,7 +200,7 @@ fun InvoiceDto.toEntity(): InvoiceEntity {
 
 fun InvoiceEntity.toDomain(): Invoice {
     return Invoice(
-        id = this.id,
+        id = this.id,  // String UUID
         type = when (this.type?.uppercase()) {
             "ACCOMMODATION_FEE", "ROOM" -> InvoiceType.ROOM
             "ELECTRICITY" -> InvoiceType.ELECTRICITY

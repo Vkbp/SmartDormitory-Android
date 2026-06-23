@@ -2,17 +2,25 @@ package com.ktx.dormitory.data.remote.dto.user
 
 import com.google.gson.annotations.SerializedName
 
+/**
+ * DTO cho Đơn đăng ký nội trú.
+ * Tương thích với ApplicationResponse.java từ Backend.
+ */
 data class DormApplicationDto(
-    @SerializedName("application_code") val applicationCode: String?,
+    @SerializedName("applicationCode") val applicationCode: String?,
     @SerializedName("status") val status: String?,
-    @SerializedName("submission_date") val submissionDate: String?,
-    @SerializedName("payment_deadline") val paymentDeadline: String?,
-    @SerializedName("timeline") val timeline: List<TimelineStepDto> = emptyList()
+    @SerializedName("submittedAt") val submissionDate: String?,
+    @SerializedName("revisionDeadline") val revisionDeadline: String?,
+    @SerializedName("applicationId") val id: String? = null,
+    @SerializedName("fullName") val fullName: String? = null,
+    @SerializedName("cccd") val cccd: String? = null,
+    @SerializedName("priorityScore") val priorityScore: Int? = null,
+    @SerializedName("applicationPdfUrl") val applicationPdfUrl: String? = null
 )
 
 data class TimelineStepDto(
     @SerializedName("title") val title: String?,
     @SerializedName("description") val description: String?,
     @SerializedName("timestamp") val timestamp: String?,
-    @SerializedName("step_status") val stepStatus: String?
+    @SerializedName("stepStatus") val stepStatus: String?
 )

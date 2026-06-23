@@ -5,10 +5,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ktx.dormitory.ai.processing.*
+import com.ktx.dormitory.data.local.datasource.UserLocalDataSource
 import com.ktx.dormitory.domain.repository.SettingsRepository
 import com.ktx.dormitory.domain.face.model.FaceVerificationResult
 import com.ktx.dormitory.domain.face.usecase.RegisterFaceUseCase
 import com.ktx.dormitory.domain.face.usecase.VerifyFaceUseCase
+import com.ktx.dormitory.domain.usecase.user.UploadAvatarUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,7 +20,9 @@ import javax.inject.Inject
 class FaceViewModel @Inject constructor(
     private val registerFaceUseCase: RegisterFaceUseCase,
     private val verifyFaceUseCase: VerifyFaceUseCase,
+    private val uploadAvatarUseCase: UploadAvatarUseCase,
     private val settingsRepository: SettingsRepository,
+    private val userLocalDataSource: UserLocalDataSource,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
@@ -60,13 +64,29 @@ class FaceViewModel @Inject constructor(
         }
     }
 
-    fun registerFace(studentId: String, name: String, embedding: FloatArray) {
+    fun registerFace(name: String, embedding: FloatArray, imagePath: String) {
         if (livenessState.value.currentStep != LivenessStep.COMPLETED) return
         viewModelScope.launch {
             savedStateHandle["isRegistering"] = true
-            registerFaceUseCase(studentId, name, embedding)
-            savedStateHandle["isRegistering"] = false
-            savedStateHandle["registrationSuccess"] = true
+            
+            // Lấy studentId (UUID) thực sự từ student profile đã cache
+            val profile = userLocalDataSource.getProfile().firstOrNull()
+            val studentId = profile?.id
+            
+            if (studentId == null) {
+                // Xử lý lỗi nếu chưa có profile
+                savedStateHandle["isRegistering"] = false
+                return@launch
+            }
+
+            val uploadResult = uploadAvatarUseCase(imagePath)
+            uploadResult.onSuccess { url ->
+                registerFaceUseCase(studentId, name, embedding, url)
+                savedStateHandle["isRegistering"] = false
+                savedStateHandle["registrationSuccess"] = true
+            }.onFailure {
+                savedStateHandle["isRegistering"] = false
+            }
         }
     }
 

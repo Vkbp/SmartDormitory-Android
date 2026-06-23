@@ -20,7 +20,7 @@ class PaymentViewModel @Inject constructor(
 ) : ViewModel() {
 
     val uiState: StateFlow<PaymentUiState> = savedStateHandle.getStateFlow("uiState", PaymentUiState.Loading)
-    
+
     val errorEvent: StateFlow<String?> = savedStateHandle.getStateFlow("errorEvent", null)
 
     private fun updateUiState(state: PaymentUiState) {
@@ -44,7 +44,9 @@ class PaymentViewModel @Inject constructor(
             updateUiState(PaymentUiState.Loading)
             getInvoicesUseCase()
                 .onSuccess { data ->
-                    val total = data.filter { it.status == PaymentStatus.UNPAID }.sumOf { it.amount }
+                    // Backend Map từ /v1/bills KHÔNG có remainingAmount, dùng amount làm fallback
+                    val total = data.filter { (it.status == PaymentStatus.UNPAID) || (it.status == PaymentStatus.PARTIALLY_PAID) }
+                        .sumOf { it.remainingAmount ?: it.amount ?: 0.0 }
                     updateUiState(PaymentUiState.Success(data, total))
                 }
                 .onFailure {
@@ -53,13 +55,27 @@ class PaymentViewModel @Inject constructor(
         }
     }
 
-    fun verifyPayment(invoiceId: String) {
+    /**
+     * Xác nhận đã chuyển khoản ngân hàng cho hóa đơn.
+     * Gửi POST v1/payments/online với phương thức BANK_TRANSFER.
+     * transactionCode được tạo tự động từ billId + timestamp.
+     *
+     * @param billId UUID của hóa đơn cần thanh toán
+     * @param amount Số tiền thanh toán
+     */
+    fun verifyPayment(billId: String, amount: Double) {
         viewModelScope.launch {
             // Ngăn chặn spam click bằng Mutex
             if (actionMutex.isLocked) return@launch
-            
+
             actionMutex.withLock {
-                verifyPaymentUseCase(invoiceId)
+                val transactionCode = "PAY_${billId.take(8)}_${System.currentTimeMillis()}"
+                verifyPaymentUseCase(
+                    billId = billId,
+                    amount = amount,
+                    paymentMethod = "BANK_TRANSFER",
+                    transactionCode = transactionCode
+                )
                     .onSuccess {
                         loadInvoices()
                     }

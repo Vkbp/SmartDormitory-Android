@@ -5,33 +5,43 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.ktx.dormitory.domain.model.AccessLog
 
+/**
+ * AccessLogEntity - Entity lưu trữ lịch sử ra vào cục bộ.
+ * Schema khớp với Backend: /api/v1/access/history/student/{id}
+ */
 @Entity(
     tableName = "access_logs",
-    indices = [Index(value = ["userId"]), Index(value = ["timestamp"])]
+    indices = [Index(value = ["studentId"]), Index(value = ["eventTimestamp"])]
 )
 data class AccessLogEntity(
     @PrimaryKey val id: String,
-    val userId: String,
-    val location: String,
-    val timestamp: String,
-    val isSuccess: Boolean,
-    val method: String
+    val studentId: String?,
+    val gateId: String?,
+    val buildingId: String?,
+    val eventTimestamp: String?,
+    val decision: String?,      // GRANTED / DENIED
+    val denialReason: String?,
+    val method: String?         // QR / FACE / RFID
 )
 
 fun AccessLogEntity.toDomain() = AccessLog(
     id = id,
-    userId = userId,
-    location = location,
-    timestamp = timestamp,
-    isSuccess = isSuccess,
+    studentId = studentId,
+    gateId = gateId,
+    buildingId = buildingId,
+    eventTimestamp = eventTimestamp,
+    decision = decision,
+    denialReason = denialReason,
     method = method
 )
 
 fun AccessLog.toEntity() = AccessLogEntity(
     id = id,
-    userId = userId ?: "",
-    location = location ?: "",
-    timestamp = timestamp ?: "",
-    isSuccess = isSuccess,
-    method = method ?: ""
+    studentId = studentId,
+    gateId = gateId,
+    buildingId = buildingId,
+    eventTimestamp = eventTimestamp,
+    decision = decision,
+    denialReason = denialReason,
+    method = method
 )

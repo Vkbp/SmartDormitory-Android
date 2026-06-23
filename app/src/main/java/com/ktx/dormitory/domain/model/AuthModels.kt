@@ -8,6 +8,7 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class UserData(
+    val id: String? = null,        // UUID sinh viên - dùng để gọi /access/history/student/{id}
     val username: String,
     val role: String? = null,
     val fullName: String? = null

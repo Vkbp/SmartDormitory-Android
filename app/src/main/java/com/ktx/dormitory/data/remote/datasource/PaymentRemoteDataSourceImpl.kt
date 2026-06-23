@@ -9,5 +9,17 @@ class PaymentRemoteDataSourceImpl @Inject constructor(
     private val api: PaymentApiService
 ) : PaymentRemoteDataSource {
     override suspend fun getInvoices(): BaseResponse<List<InvoiceDto>> = api.getInvoices()
-    override suspend fun verifyPayment(invoiceId: String): BaseResponse<Unit> = api.verifyPayment(invoiceId)
+    override suspend fun verifyPayment(
+        billId: String,
+        amount: Double,
+        paymentMethod: String,
+        transactionCode: String
+    ): BaseResponse<Unit> = api.verifyPayment(
+        hashMapOf(
+            "billId" to billId,
+            "amount" to amount,
+            "paymentMethod" to paymentMethod,
+            "transactionCode" to transactionCode
+        )
+    )
 }

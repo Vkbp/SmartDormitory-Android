@@ -16,8 +16,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.graphics.Color as ComposeColor
+import java.io.File
+import java.io.FileOutputStream
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -188,7 +191,14 @@ fun FaceRegistrationScreen(
                             val croppedFace = bitmap.cropFace(face.boundingBox)
                             val embedding = faceNetModel.getFaceEmbedding(croppedFace)
                             if (embedding.isNotEmpty()) {
-                                faceViewModel.registerFace(student.username, student.fullName ?: "Người dùng", embedding)
+                                // Save cropped face to temp file
+                                val file = File(context.cacheDir, "temp_face_registration.jpg")
+                                val out = FileOutputStream(file)
+                                croppedFace.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                                out.flush()
+                                out.close()
+                                
+                                faceViewModel.registerFace(student.fullName ?: "Người dùng", embedding, file.absolutePath)
                             }
                         }
                     },

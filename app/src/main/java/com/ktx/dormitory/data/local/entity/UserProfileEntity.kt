@@ -8,14 +8,17 @@ data class UserProfileEntity(
     @PrimaryKey val id: String,
     val studentCode: String,
     val fullName: String,
-    val citizenId: String,
-    val gender: String,
-    val birthDate: String,
+    val cccd: String,
     val faculty: String,
-    val course: String,
+    val academicYear: String,
     val phone: String,
     val email: String,
     val permanentAddress: String,
-    val role: String,
-    val avatarUrl: String?
+    val avatarUrl: String?,
+    val fatherName: String? = null,
+    val fatherPhone: String? = null,
+    val motherName: String? = null,
+    val motherPhone: String? = null,
+    val emergencyContact: String? = null,
+    val status: String? = null
 )

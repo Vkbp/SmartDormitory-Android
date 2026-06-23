@@ -46,7 +46,7 @@ fun RoomScreen(navController: NavController, viewModel: RoomViewModel) {
                 room != null -> {
                     Column(modifier = Modifier.padding(16.dp)) {
                         RoomDetailCard("Tòa nhà", room.building, Icons.Default.Business)
-                        RoomDetailCard("Tầng", room.floor, Icons.Default.Layers)
+                        RoomDetailCard("Tầng", room.floor?.toString(), Icons.Default.Layers)
                         RoomDetailCard("Số phòng", room.roomCode, Icons.Default.MeetingRoom)
                         RoomDetailCard("Vị trí giường", room.bedCode, Icons.Default.Bed)
                         RoomDetailCard("Trạng thái", room.status, Icons.Default.Info)

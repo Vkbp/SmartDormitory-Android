@@ -6,7 +6,12 @@ import javax.inject.Inject
 class VerifyPaymentUseCase @Inject constructor(
     private val paymentRepository: PaymentRepository
 ) {
-    suspend operator fun invoke(invoiceId: String): Result<Unit> {
-        return paymentRepository.verifyPayment(invoiceId)
+    suspend operator fun invoke(
+        billId: String,
+        amount: Double,
+        paymentMethod: String,
+        transactionCode: String
+    ): Result<Unit> {
+        return paymentRepository.verifyPayment(billId, amount, paymentMethod, transactionCode)
     }
 }

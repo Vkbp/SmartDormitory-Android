@@ -10,12 +10,12 @@
 
 ## 📂 Thư mục tài liệu đồ án (Documentation)
 
-Mọi tài liệu chi tiết phục vụ cho viết báo cáo tốt nghiệp hoặc slide bảo vệ đồ án đã được tổng hợp đầy đủ trong thư mục [doc/](doc):
+Mọi tài liệu chi tiết phục vụ cho viết báo cáo tốt nghiệp hoặc slide bảo vệ đồ án đã được tổng hợp đầy đủ trong thư mục [doc/](docs):
 
-*   📄 **Báo cáo tổng kết đồ án (Khuyên đọc):** [bao_cao_tong_ket_smart_dormitory.md](doc/bao_cao_tong_ket_smart_dormitory.md) - Báo cáo hoàn chỉnh 9 phần, viết bằng ngôn ngữ nghiệp vụ thực tế dễ hiểu dành cho giảng viên đại học và người không biết code.
-*   📝 **Tài liệu đặc tả API Backend:** [API_DOCUMENTATION.md](doc/API_DOCUMENTATION.md) - Đặc tả chi tiết các cổng API trao đổi dữ liệu.
-*   ⚙️ **Sơ đồ cấu trúc mã nguồn:** [structure.txt](doc/structure.txt) - Tổng quan cây thư mục dự án Android.
-*   🧠 **Định hướng phát triển AI:** [dinhhuongAI](doc/dinhhuongAI) - Định hướng tích hợp trí tuệ nhân tạo lâu dài cho ký túc xá thông minh.
+*   📄 **Báo cáo tổng kết đồ án (Khuyên đọc):** [bao_cao_tong_ket_smart_dormitory.md](docs/bao_cao_tong_ket_smart_dormitory.md) - Báo cáo hoàn chỉnh 9 phần, viết bằng ngôn ngữ nghiệp vụ thực tế dễ hiểu dành cho giảng viên đại học và người không biết code.
+*   📝 **Tài liệu đặc tả API Backend:** [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - Đặc tả chi tiết các cổng API trao đổi dữ liệu.
+*   ⚙️ **Sơ đồ cấu trúc mã nguồn:** [structure.txt](docs/structure.txt) - Tổng quan cây thư mục dự án Android.
+*   🧠 **Định hướng phát triển AI:** [dinhhuongAI](docs/dinhhuongAI) - Định hướng tích hợp trí tuệ nhân tạo lâu dài cho ký túc xá thông minh.
 
 ---
 

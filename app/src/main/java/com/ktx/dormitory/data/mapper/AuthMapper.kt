@@ -8,6 +8,7 @@ import com.ktx.dormitory.domain.model.UserData
  */
 fun UserResponse.toDomain(): UserData {
     return UserData(
+        id = this.id,
         username = this.username,
         role = this.role,
         fullName = this.fullName

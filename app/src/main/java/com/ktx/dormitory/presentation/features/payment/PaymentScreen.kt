@@ -40,25 +40,26 @@ fun PaymentScreen(
     viewModel: PaymentViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedInvoiceId by remember { mutableStateOf<Long?>(null) }
+    // billId là UUID String (không còn là Long)
+    var selectedInvoice by remember { mutableStateOf<Invoice?>(null) }
 
-    if (selectedInvoiceId != null) {
+    selectedInvoice?.let { invoice ->
         AlertDialog(
-            onDismissRequest = { selectedInvoiceId = null },
+            onDismissRequest = { selectedInvoice = null },
             title = { Text("Xác nhận thanh toán") },
-            text = { Text("Bạn có chắc chắn đã chuyển khoản cho hóa đơn này? Hành động này sẽ gửi yêu cầu đối soát tới ban quản lý.") },
+            text = { Text("Bạn có chắc chắn đã chuyển khoản ${formatCurrency(invoice.remainingAmount ?: invoice.amount ?: 0.0)} cho hóa đơn \"${invoice.description ?: "Không có mô tả"}\"? Hành động này sẽ gửi yêu cầu đối soát tới ban quản lý.") },
             confirmButton = {
                 Button(
                     onClick = {
-                        selectedInvoiceId?.let { viewModel.verifyPayment(it.toString()) }
-                        selectedInvoiceId = null
+                        viewModel.verifyPayment(invoice.id, invoice.remainingAmount ?: invoice.amount ?: 0.0)
+                        selectedInvoice = null
                     },
                     modifier = Modifier.testTag("payment_confirm_dialog_confirm")
                 ) { Text("Xác nhận") }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { selectedInvoiceId = null },
+                    onClick = { selectedInvoice = null },
                     modifier = Modifier.testTag("payment_confirm_dialog_cancel")
                 ) { Text("Hủy") }
             }
@@ -92,7 +93,7 @@ fun PaymentScreen(
                     if (state.invoices.isEmpty()) {
                         Box(Modifier.testTag("payment_empty_view")) { EmptyView(message = "Không có hóa đơn nào cần thanh toán") }
                     } else {
-                        PaymentContent(state) { selectedInvoiceId = it }
+                        PaymentContent(state) { invoice -> selectedInvoice = invoice }
                     }
                 }
             }
@@ -101,7 +102,7 @@ fun PaymentScreen(
 }
 
 @Composable
-fun PaymentContent(state: PaymentUiState.Success, onInvoiceClick: (Long) -> Unit) {
+fun PaymentContent(state: PaymentUiState.Success, onInvoiceClick: (Invoice) -> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().testTag("payment_list"),
         contentPadding = PaddingValues(16.dp),
@@ -122,7 +123,7 @@ fun PaymentContent(state: PaymentUiState.Success, onInvoiceClick: (Long) -> Unit
         items(state.invoices) { invoice ->
             InvoiceCard(
                 invoice = invoice,
-                onVerify = { onInvoiceClick(invoice.id) }
+                onVerify = { onInvoiceClick(invoice) }
             )
         }
 
@@ -165,25 +166,37 @@ fun InvoiceCard(invoice: Invoice, onVerify: () -> Unit) {
                 Spacer(Modifier.width(16.dp))
 
                 Column(Modifier.weight(1f)) {
-                    Text(invoice.description, fontWeight = FontWeight.Bold)
-                    Text("Hạn: ${invoice.dueDate}", style = MaterialTheme.typography.bodySmall)
+                    Text(invoice.description ?: "Hóa đơn", fontWeight = FontWeight.Bold)
+                    Text("Hạn: ${invoice.dueDate ?: "N/A"}", style = MaterialTheme.typography.bodySmall)
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = formatCurrency(invoice.amount),
+                        text = formatCurrency(invoice.amount ?: 0.0),
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    if ((invoice.remainingAmount ?: 0.0) > 0) {
+                        Text(
+                            text = "Còn lại: ${formatCurrency(invoice.remainingAmount ?: 0.0)}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color(0xFFF44336)
+                        )
+                    }
                     Text(
-                        text = if (invoice.status == PaymentStatus.PAID) "Đã thanh toán" else "Chưa thanh toán",
+                        text = when (invoice.status) {
+                            PaymentStatus.PAID -> "Đã thanh toán"
+                            PaymentStatus.PARTIALLY_PAID -> "Thanh toán một phần"
+                            PaymentStatus.OVERDUE -> "Quá hạn"
+                            else -> "Chưa thanh toán"
+                        },
                         style = MaterialTheme.typography.labelSmall,
                         color = statusColor
                     )
                 }
             }
 
-            if (invoice.status == PaymentStatus.UNPAID) {
+            if (invoice.status == PaymentStatus.UNPAID || invoice.status == PaymentStatus.PARTIALLY_PAID) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = onVerify,

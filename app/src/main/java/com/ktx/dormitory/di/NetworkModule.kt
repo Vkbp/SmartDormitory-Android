@@ -69,12 +69,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideNotificationApi(retrofit: Retrofit): NotificationApiService {
-        return retrofit.create(NotificationApiService::class.java)
-    }
-
-    @Provides
-    @Singleton
     fun provideAccessApi(retrofit: Retrofit): AccessApiService {
         return retrofit.create(AccessApiService::class.java)
     }
@@ -83,12 +77,6 @@ object NetworkModule {
     @Singleton
     fun providePaymentApi(retrofit: Retrofit): PaymentApiService {
         return retrofit.create(PaymentApiService::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideRequestApi(retrofit: Retrofit): RequestApiService {
-        return retrofit.create(RequestApiService::class.java)
     }
 
     @Provides

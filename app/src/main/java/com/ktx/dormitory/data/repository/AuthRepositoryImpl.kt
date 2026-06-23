@@ -22,13 +22,24 @@ class AuthRepositoryImpl @Inject constructor(
             
             val response = remoteDataSource.login(LoginRequest(usernameOrEmail, password))
             if (response.success && response.data != null) {
+                // 1. Lưu token trước để các request sau có Authorization header
                 localDataSource.saveTokens(response.data.accessToken, response.data.refreshToken)
-                val user = UserData(
-                    username = usernameOrEmail,
-                    role = response.data.role,
-                    fullName = null
-                )
-                Result.success(user)
+                
+                // 2. Tự động gọi lấy thông tin chi tiết (bao gồm Role) từ endpoint /users/me
+                val profileResponse = remoteDataSource.getCurrentUser()
+                
+                if (profileResponse.success && profileResponse.data != null) {
+                    val user = profileResponse.data.toDomain()
+                    Result.success(user)
+                } else {
+                    // Fallback nếu lấy profile lỗi nhưng đã có token
+                    val fallbackUser = UserData(
+                        username = usernameOrEmail,
+                        role = "STUDENT", // Giả định mặc định cho Mobile
+                        fullName = null
+                    )
+                    Result.success(fallbackUser)
+                }
             } else {
                 Result.failure(Exception(response.message))
             }

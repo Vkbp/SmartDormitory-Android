@@ -2,6 +2,10 @@ package com.ktx.dormitory.data.remote.dto.user
 
 import com.google.gson.annotations.SerializedName
 
+/**
+ * DTO cho thông tin chi tiết sinh viên.
+ * Tương thích với StudentProfileResponse.java từ Backend.
+ */
 data class StudentResponse(
     @SerializedName("studentId") val id: String? = null,
     @SerializedName("studentCode") val studentCode: String? = null,
@@ -19,6 +23,9 @@ data class StudentResponse(
     @SerializedName("permanentAddress") val permanentAddress: String? = null,
     @SerializedName("avatarUrl") val avatarUrl: String? = null,
     @SerializedName("status") val status: String? = null,
+    
+    // Các trường dưới đây có thể không có trong StudentProfileResponse của Backend
+    // nhưng được giữ lại để tương thích với UI và tránh lỗi biên dịch.
     @SerializedName("gender") val gender: String? = null,
     @SerializedName("birthDate") val birthDate: String? = null,
     @SerializedName("course") val course: String? = null,

@@ -16,9 +16,19 @@ data class MarkNotificationReadPayload(
 
 data class RegisterFacePayload(
     val studentId: String,
-    val embedding: List<Float>
+    val faceImageUrl: String
 )
 
 data class VerifyQrPayload(
     val qrCode: String
+)
+
+/**
+ * Payload cho đồng bộ xác nhận thanh toán.
+ */
+data class VerifyPaymentPayload(
+    val billId: String,
+    val amount: Double,
+    val method: String,
+    val transactionCode: String
 )

@@ -6,7 +6,7 @@ import javax.inject.Inject
 class RegisterFaceUseCase @Inject constructor(
     private val faceRepository: FaceRepository
 ) {
-    suspend operator fun invoke(studentId: String, name: String, embedding: FloatArray): Result<Unit> {
-        return faceRepository.registerFace(studentId, name, embedding)
+    suspend operator fun invoke(studentId: String, name: String, embedding: FloatArray, faceImageUrl: String): Result<Unit> {
+        return faceRepository.registerFace(studentId, name, embedding, faceImageUrl)
     }
 }

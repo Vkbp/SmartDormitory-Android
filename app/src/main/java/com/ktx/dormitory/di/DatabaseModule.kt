@@ -22,6 +22,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        // Migration 6 -> 7: thêm bảng pending_sync
         val migration6To7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("""
@@ -38,12 +39,21 @@ object DatabaseModule {
             }
         }
 
+        // Migration 7 -> 8: xóa bảng notifications và dorm_requests
+        // (Backend không có API tương ứng, đây là dead schema)
+        val migration7To8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `notifications`")
+                db.execSQL("DROP TABLE IF EXISTS `dorm_requests`")
+            }
+        }
+
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java,
             "smart_dorm_db"
         )
-        .addMigrations(migration6To7)
+        .addMigrations(migration6To7, migration7To8)
         .build()
     }
 
@@ -60,16 +70,6 @@ object DatabaseModule {
     @Provides
     fun provideUserProfileDao(database: AppDatabase): UserProfileDao {
         return database.userProfileDao()
-    }
-
-    @Provides
-    fun provideNotificationDao(database: AppDatabase): NotificationDao {
-        return database.notificationDao()
-    }
-
-    @Provides
-    fun provideDormRequestDao(database: AppDatabase): DormRequestDao {
-        return database.dormRequestDao()
     }
 
     @Provides

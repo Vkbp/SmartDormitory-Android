@@ -36,7 +36,7 @@ data class UserProfile(
 @Parcelize
 data class RoomInfo(
     val building: String?,
-    val floor: String?,
+    val floor: Int?,
     val roomCode: String?,
     val bedCode: String?,
     val status: String?
@@ -53,7 +53,8 @@ data class Transaction(
     val status: String?,
     val createdAt: String?,
     val type: String? = null,
-    val message: String? = null
+    val message: String? = null,
+    val transactionCode: String? = null
 ) : Parcelable
 
 /**
@@ -85,26 +86,32 @@ enum class AppStepStatus : Parcelable {
 
 @Parcelize
 data class Invoice(
-    val id: Long,
+    val id: String,   // UUID from backend
     val type: InvoiceType?,
-    val amount: Double,
-    val paidAmount: Double,
-    val remainingAmount: Double,
+    val amount: Double?,
+    val paidAmount: Double?,
+    val remainingAmount: Double?,
     val status: PaymentStatus?,
     val dueDate: String?,
-    val description: String,
+    val description: String?,
     val roomCode: String? = null,
     val bedCode: String? = null
 ) : Parcelable
 
+/**
+ * Loại hóa đơn (Đồng bộ với BillType của Backend)
+ */
 @Parcelize
 enum class InvoiceType : Parcelable {
-    ROOM, ELECTRICITY, WATER, SERVICE
+    ROOM, ELECTRICITY, WATER, SERVICE, APPLICATION, PENALTY, DEPOSIT
 }
 
+/**
+ * Trạng thái thanh toán (Đồng bộ với BillStatus của Backend)
+ */
 @Parcelize
 enum class PaymentStatus : Parcelable {
-    UNPAID, PARTIALLY_PAID, PAID, OVERDUE
+    UNPAID, PARTIALLY_PAID, PAID, OVERDUE, CANCELLED
 }
 
 /**
