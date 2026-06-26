@@ -9,7 +9,7 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.ktx.dormitory.core.utils.toBitmapRotation
-import com.ktx.dormitory.presentation.face.viewmodel.FaceViewModel
+import com.ktx.dormitory.presentation.features.face.FaceViewModel
 
 class FaceAnalyzer(
     private val viewModel: FaceViewModel,

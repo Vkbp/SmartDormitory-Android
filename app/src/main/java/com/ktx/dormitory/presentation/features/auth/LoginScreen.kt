@@ -46,12 +46,7 @@ fun LoginScreen(navController: NavController,
                 showBiometricDialog = false
                 loginViewModel.loginWithBiometric(
                     onSuccess = { role ->
-                        val destination = when (role.uppercase()) {
-                            "USER", "STUDENT" -> Screen.StudentHome.route
-                            "STAFF" -> Screen.StaffHome.route
-                            "ADMIN" -> Screen.AdminHome.route
-                            else -> Screen.StudentHome.route
-                        }
+                        val destination = Screen.StudentHome.route
                         // ISSUE 2: Xử lý Back Stack an toàn cho Biometric Login
                         navController.navigate(destination) {
                             popUpTo(Screen.Login.route) { inclusive = true }
@@ -117,12 +112,7 @@ fun LoginScreen(navController: NavController,
                         usernameOrEmail = mssv,
                         password = password,
                         onSuccess = { role ->
-                            val userRole = role.uppercase()
-                            val destination = when (userRole) {
-                                "STAFF" -> Screen.StaffHome.route
-                                "ADMIN" -> Screen.AdminHome.route
-                                else -> Screen.StudentHome.route
-                            }
+                            val destination = Screen.StudentHome.route
                             // ISSUE 2: Xử lý Back Stack an toàn cho Manual Login
                             navController.navigate(destination) {
                                 popUpTo(Screen.Login.route) { inclusive = true }

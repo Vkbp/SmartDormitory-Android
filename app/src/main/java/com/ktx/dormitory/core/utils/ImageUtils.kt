@@ -37,3 +37,19 @@ fun Bitmap.cropFace(boundingBox: Rect): Bitmap {
     
     return Bitmap.createBitmap(this, left, top, width, height)
 }
+
+/**
+ * Lưu Bitmap vào tệp cache
+ */
+fun Bitmap.saveToFile(context: android.content.Context, fileName: String): String? {
+    return try {
+        val file = java.io.File(context.cacheDir, fileName)
+        java.io.FileOutputStream(file).use { out ->
+            this.compress(Bitmap.CompressFormat.JPEG, 90, out)
+        }
+        file.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}

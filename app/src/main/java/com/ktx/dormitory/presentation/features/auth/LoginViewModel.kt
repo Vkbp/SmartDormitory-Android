@@ -3,8 +3,8 @@ package com.ktx.dormitory.presentation.features.auth
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ktx.dormitory.domain.usecase.auth.*
-import com.ktx.dormitory.domain.model.UserData
+import com.ktx.dormitory.domain.auth.usecase.*
+import com.ktx.dormitory.domain.auth.model.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -21,7 +21,6 @@ open class LoginViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    // Sử dụng SavedStateHandle để bảo vệ state khỏi Process Death
     open val uiState: StateFlow<LoginUiState> = savedStateHandle.getStateFlow("uiState", LoginUiState())
 
     private fun updateUiState(reducer: (LoginUiState) -> LoginUiState) {
@@ -145,9 +144,8 @@ open class LoginViewModel @Inject constructor(
 
     open fun getUserInfo(onSuccess: (UserData) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
-            getAuthStateUseCase().onSuccess {
-                updateUiState { it.copy(userData = it.userData) }
-                onSuccess(it)
+            getAuthStateUseCase().onSuccess { data ->
+                onSuccess(data)
             }.onFailure {
                 onError(it.message ?: "Lỗi tải thông tin")
             }

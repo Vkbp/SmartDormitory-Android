@@ -1,7 +1,7 @@
 package com.ktx.dormitory.presentation.features.auth
 
 import android.os.Parcelable
-import com.ktx.dormitory.domain.model.UserData
+import com.ktx.dormitory.domain.auth.model.UserData
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -15,13 +15,13 @@ data class LoginUiState(
 
 sealed class LoginUiEvent {
     data class LoginClicked(val mssv: String, val pass: String) : LoginUiEvent()
-    object BiometricClicked : LoginUiEvent()
-    object LogoutClicked : LoginUiEvent()
+    data object BiometricClicked : LoginUiEvent()
+    data object LogoutClicked : LoginUiEvent()
     data class ForgotPasswordClicked(val email: String) : LoginUiEvent()
 }
 
 sealed class LoginUiEffect {
     data class NavigateToHome(val role: String) : LoginUiEffect()
     data class ShowError(val message: String) : LoginUiEffect()
-    object NavigateToLogin : LoginUiEffect()
+    data object NavigateToLogin : LoginUiEffect()
 }

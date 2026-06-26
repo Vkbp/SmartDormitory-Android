@@ -5,13 +5,17 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.ktx.dormitory.core.Constants
-import com.ktx.dormitory.data.remote.api.AuthApiService
 import com.ktx.dormitory.core.network.AuthInterceptor
 import com.ktx.dormitory.core.network.IdempotencyInterceptor
 import com.ktx.dormitory.core.network.RetryInterceptor
 import com.ktx.dormitory.core.network.TokenAuthenticator
-import com.ktx.dormitory.data.remote.api.*
 import com.ktx.dormitory.core.network.NetworkMonitor
+import com.ktx.dormitory.data.auth.remote.AuthApiService
+import com.ktx.dormitory.data.profile.remote.ProfileApiService
+import com.ktx.dormitory.data.room.remote.RoomApiService
+import com.ktx.dormitory.data.application.remote.ApplicationApiService
+import com.ktx.dormitory.data.payment.remote.PaymentApiService
+import com.ktx.dormitory.data.access.remote.AccessApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +39,7 @@ object NetworkModule {
         tokenAuthenticator: TokenAuthenticator
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(idempotencyInterceptor) // Idempotency should be outside Retry to keep same key for retries
+            .addInterceptor(idempotencyInterceptor)
             .addInterceptor(RetryInterceptor(maxRetry = 2))
             .addInterceptor(authInterceptor)
             .authenticator(tokenAuthenticator)
@@ -69,8 +73,20 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAccessApi(retrofit: Retrofit): AccessApiService {
-        return retrofit.create(AccessApiService::class.java)
+    fun provideProfileApi(retrofit: Retrofit): ProfileApiService {
+        return retrofit.create(ProfileApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRoomApi(retrofit: Retrofit): RoomApiService {
+        return retrofit.create(RoomApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideApplicationApi(retrofit: Retrofit): ApplicationApiService {
+        return retrofit.create(ApplicationApiService::class.java)
     }
 
     @Provides
@@ -81,8 +97,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideUserApi(retrofit: Retrofit): UserApiService {
-        return retrofit.create(UserApiService::class.java)
+    fun provideAccessApi(retrofit: Retrofit): AccessApiService {
+        return retrofit.create(AccessApiService::class.java)
     }
 
     @Provides

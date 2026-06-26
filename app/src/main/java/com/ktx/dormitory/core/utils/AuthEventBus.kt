@@ -1,4 +1,4 @@
-package com.ktx.dormitory.util
+package com.ktx.dormitory.core.utils
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

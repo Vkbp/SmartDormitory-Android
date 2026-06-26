@@ -12,17 +12,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.ktx.dormitory.presentation.features.access.AccessHistoryScreen
-import com.ktx.dormitory.presentation.face.screen.FaceDetectionScreen
-import com.ktx.dormitory.presentation.face.screen.FaceRegistrationScreen
-import com.ktx.dormitory.presentation.face.screen.FaceVerificationScreen
+import com.ktx.dormitory.presentation.features.face.FaceDetectionScreen
+import com.ktx.dormitory.presentation.features.face.FaceRegistrationScreen
+import com.ktx.dormitory.presentation.features.face.FaceVerificationScreen
 import com.ktx.dormitory.presentation.features.auth.ChangePasswordScreen
 import com.ktx.dormitory.presentation.features.auth.LoginScreen
 import com.ktx.dormitory.presentation.features.auth.LoginViewModel
 import com.ktx.dormitory.presentation.features.auth.SplashScreen
 import com.ktx.dormitory.presentation.features.payment.PaymentScreen
-import com.ktx.dormitory.HomeScreen
-import com.ktx.dormitory.presentation.features.student.*
-import com.ktx.dormitory.presentation.components.PlaceholderScreen
+import com.ktx.dormitory.presentation.features.payment.PaymentHistoryScreen
+import com.ktx.dormitory.presentation.features.payment.PaymentHistoryViewModel
+import com.ktx.dormitory.presentation.features.home.HomeScreen
+import com.ktx.dormitory.presentation.features.profile.ProfileScreen
+import com.ktx.dormitory.presentation.features.room.RoomScreen
+import com.ktx.dormitory.presentation.features.room.RoomViewModel
+import com.ktx.dormitory.presentation.features.application.ApplicationStatusScreen
+import com.ktx.dormitory.presentation.features.application.ApplicationViewModel
 
 sealed class Screen(val route: String, val title: String) {
     data object Splash : Screen("splash", "Chào mừng")
@@ -51,8 +56,17 @@ fun RoleGuard(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     Text("Đang xác thực quyền...", style = MaterialTheme.typography.labelSmall)
+                    
+                    // Thêm nút thoát nếu bị kẹt ở đây quá lâu
+                    TextButton(onClick = { 
+                        loginViewModel.logout { 
+                            // Quay về màn hình login
+                        }
+                    }) {
+                        Text("Hủy và quay lại Đăng nhập", color = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
         }
@@ -91,7 +105,7 @@ fun AppNavigation(navController: NavHostController) {
 
         composable(Screen.StudentHome.route) {
             RoleGuard(loginViewModel) {
-                HomeScreen(navController, loginViewModel)
+                HomeScreen(navController)
             }
         }
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ktx.dormitory.navigation.Screen
 
@@ -32,6 +33,7 @@ fun ChangePasswordScreen(
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val uiState by loginViewModel.uiState.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -89,9 +91,9 @@ fun ChangePasswordScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
-            enabled = !loginViewModel.isLoading // Chống bấm nhiều lần khi đang load
+            enabled = !uiState.isLoading // Chống bấm nhiều lần khi đang load
         ) {
-            if (loginViewModel.isLoading) {
+            if (uiState.isLoading) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
             } else {
                 Text("XÁC NHẬN ĐỔI")

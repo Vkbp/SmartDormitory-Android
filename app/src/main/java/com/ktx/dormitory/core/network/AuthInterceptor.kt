@@ -1,6 +1,6 @@
 package com.ktx.dormitory.core.network
 
-import com.ktx.dormitory.data.local.TokenManager
+import com.ktx.dormitory.data.auth.local.TokenManager
 import okhttp3.Interceptor
 import okhttp3.Response
 import javax.inject.Inject
@@ -8,21 +8,14 @@ import javax.inject.Inject
 class AuthInterceptor @Inject constructor(
     private val tokenManager: TokenManager
 ) : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-        val path = request.url.encodedPath
-        val requestBuilder = request.newBuilder()
-
-        val isPublicApi = path.contains("auth/login", ignoreCase = true) || 
-                         path.contains("auth/refresh-token", ignoreCase = true) ||
-                         path.contains("auth/forgot-password", ignoreCase = true)
-
-        if (!isPublicApi) {
-            // Loại bỏ runBlocking, sử dụng gọi trực tiếp từ SharedPreferences (Synchronous)
-            // giúp tăng hiệu năng và ổn định luồng OkHttp
+        val requestBuilder = chain.request().newBuilder()
+        
+        // Không thêm token cho các endpoint Auth công khai
+        val path = chain.request().url.encodedPath
+        if (!path.contains("/auth/login") && !path.contains("/auth/refresh")) {
             val token = tokenManager.getAccessTokenSync()
-            if (!token.isNullOrEmpty()) {
+            if (!token.isNullOrBlank()) {
                 requestBuilder.addHeader("Authorization", "Bearer $token")
             }
         }

@@ -20,7 +20,7 @@ class RetryInterceptor(
         }
 
         var tryCount = 0
-        while (response == null || !response.isSuccessful && tryCount < maxRetry) {
+        while ((response == null || !response.isSuccessful) && tryCount < maxRetry) {
             // Chỉ retry với các lỗi server (5xx) hoặc lỗi kết nối (IOException)
             // Không retry với lỗi client (4xx)
             if (response != null && response.code < 500) {

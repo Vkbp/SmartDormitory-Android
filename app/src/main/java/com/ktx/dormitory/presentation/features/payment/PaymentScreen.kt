@@ -6,10 +6,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MiscellaneousServices
+import androidx.compose.material.icons.filled.ReportProblem
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -153,6 +156,9 @@ fun InvoiceCard(invoice: Invoice, onVerify: () -> Unit) {
                     InvoiceType.ELECTRICITY -> Icons.Default.FlashOn
                     InvoiceType.WATER -> Icons.Default.WaterDrop
                     InvoiceType.SERVICE -> Icons.Default.MiscellaneousServices
+                    InvoiceType.APPLICATION -> Icons.AutoMirrored.Filled.Assignment
+                    InvoiceType.PENALTY -> Icons.Default.ReportProblem
+                    InvoiceType.DEPOSIT -> Icons.Default.AccountBalanceWallet
                     null -> Icons.Default.Description
                 }
 

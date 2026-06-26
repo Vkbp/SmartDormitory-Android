@@ -9,5 +9,5 @@ object Constants {
      * Timeout 15s là điểm cân bằng giữa Reliability và UX.
      * Cho phép mạng yếu xử lý được, nhưng không bắt người dùng đợi quá lâu.
      */
-    const val NETWORK_TIMEOUT = 15L // giây
+    const val NETWORK_TIMEOUT = 5L // giây
 }

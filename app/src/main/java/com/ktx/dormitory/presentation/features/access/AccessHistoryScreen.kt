@@ -19,26 +19,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.ktx.dormitory.domain.model.AccessLog
+import com.ktx.dormitory.domain.access.model.AccessLog
 import com.ktx.dormitory.presentation.components.EmptyView
 import com.ktx.dormitory.presentation.components.ErrorView
 import com.ktx.dormitory.presentation.components.LoadingView
 
-/**
- * AccessHistoryScreen - Màn hình xem lịch sử ra vào nâng cao.
- * Tự động lấy studentId từ profile thông qua ViewModel.
- */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun AccessHistoryScreen(
     navController: NavController,
     viewModel: AccessViewModel = hiltViewModel()
 ) {
-    val logs by viewModel.accessHistory.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val error by viewModel.error.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val logs = uiState.logs
 
-    // Group by date part of eventTimestamp (e.g. "2025-01-15")
     val groupedLogs = remember(logs) {
         logs.groupBy {
             (it.eventTimestamp ?: "").substringBefore("T").ifBlank { "Không xác định" }
@@ -72,9 +66,9 @@ fun AccessHistoryScreen(
                 .fillMaxSize()
         ) {
             when {
-                isLoading && logs.isEmpty() -> LoadingView()
-                error != null && logs.isEmpty() -> ErrorView(
-                    message = error ?: "Không thể tải lịch sử",
+                uiState.isLoading && logs.isEmpty() -> LoadingView()
+                uiState.error != null && logs.isEmpty() -> ErrorView(
+                    message = uiState.error ?: "Không thể tải lịch sử",
                     onRetry = { viewModel.fetchAccessHistory() }
                 )
                 logs.isEmpty() -> EmptyHistoryState()

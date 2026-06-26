@@ -5,11 +5,12 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
-import com.ktx.dormitory.data.local.dao.PendingSyncDao
-import com.ktx.dormitory.data.local.entity.SyncStatus
-import com.ktx.dormitory.domain.model.UpdateProfileRequest
-import com.ktx.dormitory.domain.repository.*
-import com.ktx.dormitory.core.sync.*
+import com.ktx.dormitory.data.common.local.*
+import com.ktx.dormitory.domain.profile.model.UpdateProfileRequest
+import com.ktx.dormitory.domain.auth.repository.*
+import com.ktx.dormitory.domain.profile.repository.*
+import com.ktx.dormitory.domain.payment.repository.*
+import com.ktx.dormitory.domain.access.repository.*
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +24,7 @@ class SyncWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val pendingSyncDao: PendingSyncDao,
     private val paymentRepository: PaymentRepository,
-    private val userRepository: UserRepository,
+    private val profileRepository: ProfileRepository,
     private val accessRepository: AccessRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -58,7 +59,7 @@ class SyncWorker @AssistedInject constructor(
                         }
                         "UPDATE_PROFILE" -> {
                             val payload = gson.fromJson(action.payload, UpdateProfileRequest::class.java)
-                            userRepository.updateProfile(payload).isSuccess
+                            profileRepository.updateProfile(payload).isSuccess
                         }
                         "REGISTER_FACE" -> {
                             val payload = gson.fromJson(action.payload, RegisterFacePayload::class.java)

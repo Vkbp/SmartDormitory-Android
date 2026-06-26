@@ -3,83 +3,50 @@ package com.ktx.dormitory.presentation.features.access
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ktx.dormitory.data.local.datasource.UserLocalDataSource
-import com.ktx.dormitory.domain.model.AccessLog
-import com.ktx.dormitory.domain.repository.AccessRepository
+import com.ktx.dormitory.data.profile.local.ProfileLocalDataSource
+import com.ktx.dormitory.domain.access.repository.AccessRepository
+import com.ktx.dormitory.domain.access.usecase.GetAccessHistoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class AccessViewModel @Inject constructor(
+    private val getAccessHistoryUseCase: GetAccessHistoryUseCase,
     private val repository: AccessRepository,
-    private val userLocalDataSource: UserLocalDataSource,
+    private val profileLocalDataSource: ProfileLocalDataSource,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val isLoading: StateFlow<Boolean> = savedStateHandle.getStateFlow("isLoading", false)
-    val error: StateFlow<String?> = savedStateHandle.getStateFlow("error", null)
-    val uiMessage: StateFlow<String?> = savedStateHandle.getStateFlow("ui_message", null)
+    val uiState: StateFlow<AccessUiState> = savedStateHandle.getStateFlow("uiState", AccessUiState())
 
-    private fun setLoading(loading: Boolean) { savedStateHandle["isLoading"] = loading }
-    private fun setError(error: String?) { savedStateHandle["error"] = error }
-    private fun setUiMessage(message: String?) { savedStateHandle["ui_message"] = message }
+    private fun updateUiState(reducer: (AccessUiState) -> AccessUiState) {
+        savedStateHandle["uiState"] = reducer(uiState.value)
+    }
 
-    val accessHistory: StateFlow<List<AccessLog>> = repository.accessLogs
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    init {
+        // Sync logs flow with UI state
+        repository.accessLogs.onEach { logs ->
+            updateUiState { it.copy(logs = logs) }
+        }.launchIn(viewModelScope)
+    }
 
-    /**
-     * Tải lịch sử ra vào. Tự động lấy studentId từ profile.
-     */
     fun fetchAccessHistory(studentId: String? = null) {
         viewModelScope.launch {
-            setError(null)
-            setLoading(true)
+            updateUiState { it.copy(isLoading = true, error = null) }
             
-            val targetId = studentId ?: userLocalDataSource.getProfile().firstOrNull()?.id
+            val targetId = studentId ?: profileLocalDataSource.getProfile().firstOrNull()?.id
             
             if (targetId == null) {
-                setError("Không tìm thấy thông tin sinh viên")
-                setLoading(false)
+                updateUiState { it.copy(isLoading = false, error = "Không tìm thấy thông tin sinh viên") }
                 return@launch
             }
 
-            repository.getAccessHistory(targetId)
-                .onFailure { setError(it.message) }
-            setLoading(false)
+            getAccessHistoryUseCase(targetId)
+                .onFailure { e -> updateUiState { it.copy(error = e.message) } }
+            
+            updateUiState { it.copy(isLoading = false) }
         }
     }
-
-    /**
-     * Đăng ký khuôn mặt: gửi URL ảnh đã upload lên server.
-     * @param faceImageUrl URL ảnh sau khi upload thành công.
-     */
-    fun registerFace(faceImageUrl: String) {
-        viewModelScope.launch {
-            setLoading(true)
-            val profile = userLocalDataSource.getProfile().firstOrNull()
-            val studentId = profile?.id
-
-            if (studentId == null) {
-                setUiMessage("Lỗi: Không tìm thấy thông tin sinh viên")
-                setLoading(false)
-                return@launch
-            }
-
-            repository.registerFaceOnServer(studentId, faceImageUrl)
-                .onSuccess { setUiMessage("Đăng ký khuôn mặt thành công!") }
-                .onFailure { setUiMessage(it.message ?: "Đăng ký thất bại") }
-            setLoading(false)
-        }
-    }
-
-    fun clearMessage() { setUiMessage(null) }
 }

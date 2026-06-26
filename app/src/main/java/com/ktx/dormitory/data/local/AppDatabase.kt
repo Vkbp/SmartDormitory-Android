@@ -4,15 +4,20 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-import com.ktx.dormitory.data.local.dao.*
-import com.ktx.dormitory.data.local.entity.*
+import com.ktx.dormitory.data.profile.local.UserProfileDao
+import com.ktx.dormitory.data.profile.local.UserProfileEntity
+import com.ktx.dormitory.data.payment.local.InvoiceDao
+import com.ktx.dormitory.data.payment.local.InvoiceEntity
+import com.ktx.dormitory.data.access.local.AccessLogDao
+import com.ktx.dormitory.data.access.local.AccessLogEntity
 import com.ktx.dormitory.data.face.local.FaceDao
 import com.ktx.dormitory.data.face.local.FaceEntity
+import com.ktx.dormitory.data.common.local.PendingSyncDao
+import com.ktx.dormitory.data.common.local.PendingSyncEntity
 
 /**
- * AppDatabase - Room DB chỉ chứa các entity còn dùng.
- * NotificationEntity và DormRequestEntity đã bị loại bỏ vì Backend không có API tương ứng.
- * Tăng version lên 8 do thay đổi schema (xóa bảng notifications, dorm_requests).
+ * AppDatabase - Room DB.
+ * Version 8.
  */
 @Database(
     entities = [

@@ -19,8 +19,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.rememberNavController
 import com.ktx.dormitory.core.network.NetworkMonitor
 import com.ktx.dormitory.navigation.AppNavigation
-import com.ktx.dormitory.util.AuthEvent
-import com.ktx.dormitory.util.AuthEventBus
+import com.ktx.dormitory.core.utils.AuthEvent
+import com.ktx.dormitory.core.utils.AuthEventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject

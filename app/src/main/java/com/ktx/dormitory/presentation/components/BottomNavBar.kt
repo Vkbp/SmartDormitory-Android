@@ -34,7 +34,7 @@ fun BottomNavBar(
         BottomNavItem(Screen.StudentHome, Icons.Default.Home, "Trang chủ"),
         BottomNavItem(Screen.RoomInfo, Icons.Default.MeetingRoom, "Phòng"),
         BottomNavItem(Screen.Payment, Icons.Default.Payments, "Thanh toán"),
-        BottomNavItem(Screen.AccessHistory, Icons.Default.History, "Lịch sử"),
+        //BottomNavItem(Screen.AccessHistory, Icons.Default.History, "Lịch sử"),
         BottomNavItem(Screen.Profile, Icons.Default.Person, "Hồ sơ")
     )
 
