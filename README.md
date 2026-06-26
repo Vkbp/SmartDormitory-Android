@@ -1,74 +1,105 @@
-# 🏢 Smart Dormitory Management System (Android Client)
+# 🏫 Smart Dormitory (SDMS) - Student Mobile App
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org/)
-[![Compose](https://img.shields.io/badge/Jetpack%20Compose-2024.10.01-green.svg?style=flat&logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
-[![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20MVVM-orange.svg)](https://developer.android.com/topic/architecture)
+![Platform](https://img.shields.io/badge/Platform-Android-brightgreen.svg)
+![Kotlin](https://img.shields.io/badge/Language-Kotlin-blue.svg)
+![Architecture](https://img.shields.io/badge/Architecture-Feature--Based%20Clean%20Architecture-orange.svg)
+![UI](https://img.shields.io/badge/UI-Jetpack%20Compose-purple.svg)
 
-**SmartDormitory** là ứng dụng di động Android hiện đại dành cho sinh viên nội trú. Dự án tập trung vào việc số hóa các dịch vụ ký túc xá, nâng cao an ninh thông qua công nghệ nhận diện khuôn mặt AI và tối ưu hóa trải nghiệm sinh viên với khả năng hoạt động ngoại tuyến linh hoạt.
-
----
-
-## 🚀 Các tính năng cốt lõi
-
-### 🤖 1. AI Face ID & Security
-*   **Đăng ký khuôn mặt Hybrid:** Thu thập ảnh khuôn mặt trên thiết bị, kiểm tra chất lượng và **Liveness Detection** (nháy mắt, quay đầu) để chống giả mạo.
-*   **Offline Verification:** Sử dụng model **MobileFaceNet** (TensorFlow Lite) để trích xuất đặc trưng khuôn mặt (192-d embedding), cho phép xác thực ra vào ngay cả khi không có kết nối mạng.
-*   **Bảo mật sinh trắc học:** Tích hợp Fingerprint/Face Unlock để bảo vệ quyền truy cập ứng dụng.
-
-### 💰 2. Quản lý Tài chính & Thanh toán
-*   **Thanh toán VietQR:** Tự động tạo mã QR động chứa thông tin hóa đơn điện, nước, tiền phòng.
-*   **Lịch sử giao dịch:** Theo dõi chi tiết các hóa đơn đã thanh toán và trạng thái nợ phí thời gian thực.
-
-### 🏠 3. Dịch vụ Sinh viên
-*   **Hồ sơ & Phòng:** Quản lý thông tin cá nhân, xem thông tin phòng hiện tại và danh sách bạn cùng phòng.
-*   **Tra cứu đơn đăng ký:** Kiểm tra tiến độ duyệt đơn ở ký túc xá thông qua mã CCCD.
-*   **Lịch sử ra vào:** Theo dõi nhật ký quét mặt tại các cổng ký túc xá.
-
-### 📶 4. Kiến trúc Offline-First
-*   **Local Caching:** Sử dụng **Room Database** để lưu trữ toàn bộ dữ liệu nghiệp vụ, đảm bảo ứng dụng luôn sẵn sàng.
-*   **Smart Sync:** Tự động đồng bộ các hành động (cập nhật hồ sơ, thanh toán, đăng ký mặt) lên máy chủ qua **WorkManager** khi có kết nối mạng trở lại.
+**Smart Dormitory (SDMS)** là ứng dụng di động dành riêng cho sinh viên nội trú, đóng vai trò là cổng dịch vụ số toàn diện giúp quản lý đời sống ký túc xá một cách thông minh, minh bạch và an toàn.
 
 ---
 
-## 🏗 Kiến trúc hệ thống (Clean Architecture)
+## 🌟 Tính năng nổi bật
 
-Dự án tuân thủ mô hình 3 lớp chuẩn hóa:
-1.  **Presentation Layer:** Sử dụng **Jetpack Compose** cho UI khai báo và **StateFlow** để quản lý trạng thái trong ViewModel.
-2.  **Domain Layer:** Chứa Logic nghiệp vụ thuần túy, Use Cases và Interfaces của Repository.
-3.  **Data Layer:** Triển khai Repository, xử lý API (Retrofit) và Local Database (Room).
+### 1. 🤖 Định danh & Ra vào bằng AI (Biometric Access)
+*   **Face Registration:** Quy trình đăng ký khuôn mặt chuẩn hóa với công nghệ **Liveness Detection** (chống giả mạo bằng ảnh chụp/video) và **Quality Check** (đảm bảo độ sáng và góc chụp).
+*   **Offline Access:** Trích xuất Face Embedding và lưu trữ mã hóa cục bộ, cho phép xác thực ra vào ngay cả khi mất kết nối máy chủ.
 
----
+### 2. 🏠 Quản lý lưu trú & Chỗ ở
+*   **Room Dashboard:** Xem chi tiết thông tin Tòa, Tầng, Số phòng và Vị trí giường theo thời gian thực.
+*   **Application Tracking:** Theo dõi tiến độ duyệt đơn đăng ký nội trú thông qua sơ đồ Timeline trực quan.
+*   **Stay Extension:** Gửi yêu cầu gia hạn hợp đồng lưu trú trực tiếp trên ứng dụng.
 
-## 🛠 Công nghệ ứng dụng
+### 3. 💳 Tài chính & Thanh toán tiện lợi
+*   **Digital Invoices:** Quản lý danh sách hóa đơn điện, nước, phòng và phí dịch vụ.
+*   **VietQR Integration:** Tự động tạo mã QR thanh toán động với đầy đủ số tiền và nội dung chuyển khoản, giúp giảm thiểu sai sót thủ công.
 
-*   **UI:** Jetpack Compose (Material Design 3)
-*   **DI:** Hilt (Dagger)
-*   **Async:** Coroutines & Flow
-*   **Network:** Retrofit 2, OkHttp 4 (Interceptor, Authenticator)
-*   **Database:** Room, DataStore
-*   **AI/ML:** Google ML Kit, TensorFlow Lite, CameraX
-*   **Image Loading:** Coil
-
----
-
-## 📂 Tài liệu chi tiết
-
-Mọi thông tin chi tiết về kỹ thuật và nghiệp vụ được tổ chức trong thư mục `docs/`:
-
-*   📄 **Tài liệu kỹ thuật tổng thể (Khuyên đọc):** [PROJECT_TECHNICAL_DOCUMENTATION.md](docs/PROJECT_TECHNICAL_DOCUMENTATION.md)
-*   📝 **Báo cáo tổng kết đồ án:** [bao_cao_tong_ket_smart_dormitory.md](docs/bao_cao_tong_ket_smart_dormitory.md)
-*   🔗 **Báo cáo tích hợp Backend:** [SMART_DORMITORY_MOBILE_BACKEND_INTEGRATION_REPORT.md](docs/SMART_DORMITORY_MOBILE_BACKEND_INTEGRATION_REPORT.md)
+### 4. 🔄 Đồng bộ hóa ngoại tuyến (Offline Sync)
+*   Sử dụng **WorkManager** để tự động đẩy các yêu cầu cập nhật (Profile, Thanh toán, Face) lên Server ngay khi thiết bị có kết nối internet trở lại.
 
 ---
 
-## ⚙️ Hướng dẫn cài đặt
+## 🏗️ Kiến trúc hệ thống (Architecture)
 
-1.  **Yêu cầu:** Android Studio Ladybug+, JDK 17+.
-2.  **Cấu hình API:** Tạo file `local.properties` tại thư mục gốc:
-    ```properties
-    BASE_URL=http://<server-ip>:8080/api/
-    ```
-3.  **Build:** Sync Gradle và nhấn **Run** trên thiết bị hỗ trợ Camera & Biometrics.
+Dự án áp dụng mô hình **Feature-Based Clean Architecture** (Kiến trúc sạch theo tính năng) - tiêu chuẩn cao nhất trong phát triển ứng dụng Android hiện đại.
+
+### Các tầng logic:
+*   **Presentation Layer:** Sử dụng **MVVM + MVI-lite** (Contract-driven). Mỗi màn hình quản lý trạng thái thông qua `UiState` và tương tác qua `UiEvent`.
+*   **Domain Layer:** Chứa các **Pure Kotlin UseCases** độc lập, đóng gói hoàn toàn quy tắc nghiệp vụ (Business Logic).
+*   **Data Layer:** Triển khai **Repository Pattern**. Quản lý dữ liệu từ Remote (Retrofit) và Local (Room DB) một cách minh bạch.
+
+### Cấu trúc thư mục chuẩn:
+```text
+com.ktx.dormitory/
+├── ai/                 # Liveness, Quality Check, FaceNet Core
+├── core/               # Mạng, Tiện ích, Interceptors, Sync
+├── data/               # Tầng dữ liệu (Chia theo Feature)
+│   ├── auth/           # DTO, Mapper, Repo implementation
+│   ├── profile/
+│   └── ...
+├── domain/             # Tầng nghiệp vụ (Chia theo Feature)
+│   ├── auth/           # UseCases, Model, Repository Interface
+│   └── ...
+├── presentation/       # Tầng giao diện (Chia theo Feature)
+│   ├── features/
+│   │   ├── face/       # Toàn bộ UI logic của tính năng Face
+│   │   ├── home/
+│   │   └── ...
+│   └── theme/          # Cấu hình Material Design 3
+└── navigation/         # Quản lý luồng chuyển màn hình
+```
 
 ---
-**Dự án sẵn sàng cho DEMO - Phát triển bởi SmartDorm Team 🎓**
+
+## 🛠️ Tech Stack
+
+*   **UI:** Jetpack Compose, Material Design 3.
+*   **Async/Multithreading:** Kotlin Coroutines & Flow.
+*   **DI:** Hilt (Dagger).
+*   **Network:** Retrofit 2, OkHttp 4, Gson.
+*   **Local DB:** Room Database, EncryptedSharedPreferences (Bảo mật token).
+*   **AI/Vision:** ML Kit Face Detection, CameraX, FaceNet (TFLite).
+*   **Image Loading:** Coil.
+
+---
+
+## 📂 Tài liệu kỹ thuật chi tiết
+
+Các báo cáo kiểm toán và đặc tả hệ thống được lưu tại thư mục `docs/`:
+
+1.  [**Kiểm toán kiến trúc cuối cùng**](./docs/FINAL_ARCHITECTURE_AUDIT.md)
+2.  [**Báo cáo tính năng chi tiết**](./docs/DETAILED_REPORT.md)
+3.  [**Đặc tả API Backend (OpenAPI)**](./docs/API_SPEC.yaml)
+4.  [**Lộ trình tích hợp & Mở rộng**](./docs/MIGRATION_PLAN.md)
+5.  [**Danh mục kiểm thử & Demo**](./docs/QA_CHECKLIST.md)
+
+---
+
+## 🚀 Hướng dẫn cài đặt
+
+1.  **Clone dự án:** `git clone https://github.com/Vkbp/SmartDormitory-Android.git`
+2.  **Mở bằng Android Studio:** (Khuyến nghị bản Ladybug trở lên).
+3.  **Cấu hình API:** Thay đổi `BASE_URL` trong file `core/Constants.kt` trỏ về Backend IP của bạn.
+4.  **Build & Run:** Chọn thiết bị Android (API 26+) và nhấn Run.
+
+---
+
+## 👨‍💻 Tác giả
+
+Dự án được thực hiện phục vụ cho Luận văn tốt nghiệp tại trường Đại học.
+
+*   **Role:** Mobile Lead / Software Architect.
+*   **Status:** Hoàn thành giai đoạn tái cấu trúc, sẵn sàng triển khai thực tế.
+
+---
+*© 2026 Smart Dormitory Project - Built with ❤️ and Clean Architecture.*
