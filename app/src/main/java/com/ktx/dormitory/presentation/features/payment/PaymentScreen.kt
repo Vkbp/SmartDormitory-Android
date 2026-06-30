@@ -32,9 +32,9 @@ import java.util.Locale
 import com.ktx.dormitory.presentation.components.EmptyView
 import com.ktx.dormitory.presentation.components.ErrorView
 import com.ktx.dormitory.presentation.components.LoadingView
-import com.ktx.dormitory.domain.model.Invoice
-import com.ktx.dormitory.domain.model.InvoiceType
-import com.ktx.dormitory.domain.model.PaymentStatus
+import com.ktx.dormitory.domain.payment.model.Invoice
+import com.ktx.dormitory.domain.payment.model.InvoiceType
+import com.ktx.dormitory.domain.payment.model.PaymentStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

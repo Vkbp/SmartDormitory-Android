@@ -8,6 +8,7 @@ import com.ktx.dormitory.data.payment.repository.PaymentRepositoryImpl
 import com.ktx.dormitory.data.access.repository.AccessRepositoryImpl
 import com.ktx.dormitory.data.face.repository.FaceRepositoryImpl
 import com.ktx.dormitory.data.settings.repository.SettingsRepositoryImpl
+import com.ktx.dormitory.data.extension.repository.ExtensionRepositoryImpl
 import com.ktx.dormitory.domain.auth.repository.AuthRepository
 import com.ktx.dormitory.domain.profile.repository.ProfileRepository
 import com.ktx.dormitory.domain.room.repository.RoomRepository
@@ -16,6 +17,7 @@ import com.ktx.dormitory.domain.payment.repository.PaymentRepository
 import com.ktx.dormitory.domain.access.repository.AccessRepository
 import com.ktx.dormitory.domain.face.repository.FaceRepository
 import com.ktx.dormitory.domain.settings.repository.SettingsRepository
+import com.ktx.dormitory.domain.extension.repository.ExtensionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -73,4 +75,10 @@ abstract class RepositoryModule {
     abstract fun bindSettingsRepository(
         settingsRepositoryImpl: SettingsRepositoryImpl
     ): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindExtensionRepository(
+        extensionRepositoryImpl: ExtensionRepositoryImpl
+    ): ExtensionRepository
 }

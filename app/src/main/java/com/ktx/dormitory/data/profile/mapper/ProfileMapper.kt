@@ -1,8 +1,8 @@
 package com.ktx.dormitory.data.profile.mapper
 
-import com.ktx.dormitory.data.local.entity.UserProfileEntity
-import com.ktx.dormitory.data.remote.dto.user.StudentResponse
-import com.ktx.dormitory.data.remote.dto.user.UpdateProfileRequest as UpdateProfileDto
+import com.ktx.dormitory.data.profile.local.UserProfileEntity
+import com.ktx.dormitory.data.profile.dto.StudentResponse
+import com.ktx.dormitory.data.profile.dto.UpdateProfileRequest as UpdateProfileDto
 import com.ktx.dormitory.domain.profile.model.UpdateProfileRequest
 import com.ktx.dormitory.domain.profile.model.UserProfile
 

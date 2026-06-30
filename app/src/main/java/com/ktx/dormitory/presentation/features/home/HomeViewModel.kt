@@ -2,8 +2,8 @@ package com.ktx.dormitory.presentation.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ktx.dormitory.domain.usecase.auth.GetAuthStateUseCase
-import com.ktx.dormitory.domain.usecase.user.GetRoomInfoUseCase
+import com.ktx.dormitory.domain.auth.usecase.GetAuthStateUseCase
+import com.ktx.dormitory.domain.room.usecase.GetRoomInfoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch

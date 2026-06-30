@@ -1,7 +1,7 @@
 package com.ktx.dormitory.presentation.features.home
 
-import com.ktx.dormitory.domain.model.RoomInfo
-import com.ktx.dormitory.domain.model.UserData
+import com.ktx.dormitory.domain.room.model.RoomInfo
+import com.ktx.dormitory.domain.auth.model.UserData
 
 interface HomeContract {
     data class State(

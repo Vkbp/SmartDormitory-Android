@@ -1,7 +1,5 @@
 package com.ktx.dormitory.data.face.remote
 
-import com.ktx.dormitory.data.remote.dto.BaseResponse
-
 /**
  * Interface datasource cho Face Registration.
  * Backend Flow: Upload ảnh → nhận URL → gửi URL qua POST /students/me/face

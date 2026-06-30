@@ -1,7 +1,5 @@
 package com.ktx.dormitory.data.profile.local
 
-import com.ktx.dormitory.data.local.dao.UserProfileDao
-import com.ktx.dormitory.data.local.entity.UserProfileEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton

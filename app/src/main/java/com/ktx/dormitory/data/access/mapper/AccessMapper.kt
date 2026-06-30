@@ -1,7 +1,7 @@
 package com.ktx.dormitory.data.access.mapper
 
-import com.ktx.dormitory.data.local.entity.AccessLogEntity
-import com.ktx.dormitory.data.remote.dto.common.AccessLogDto
+import com.ktx.dormitory.data.access.local.AccessLogEntity
+import com.ktx.dormitory.data.access.dto.AccessLogDto
 import com.ktx.dormitory.domain.access.model.AccessLog
 
 fun AccessLogDto.toDomain() = AccessLog(

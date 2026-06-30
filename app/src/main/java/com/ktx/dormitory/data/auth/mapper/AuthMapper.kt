@@ -1,6 +1,6 @@
 package com.ktx.dormitory.data.auth.mapper
 
-import com.ktx.dormitory.data.remote.dto.auth.UserResponse
+import com.ktx.dormitory.data.auth.dto.UserResponse
 import com.ktx.dormitory.domain.auth.model.UserData
 
 /**

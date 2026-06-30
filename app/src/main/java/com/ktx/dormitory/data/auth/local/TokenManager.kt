@@ -48,9 +48,9 @@ class TokenManager @Inject constructor(
         }
     }
 
-    override suspend fun getAccessTokenSync(): String? = sharedPreferences.getString("access_token", null)
+    override fun getAccessTokenSync(): String? = sharedPreferences.getString("access_token", null)
 
-    override suspend fun getRefreshTokenSync(): String? = sharedPreferences.getString("refresh_token", null)
+    override fun getRefreshTokenSync(): String? = sharedPreferences.getString("refresh_token", null)
 
     override suspend fun saveLoginStatus(isLoggedIn: Boolean) {
         context.dataStore.edit { it[IS_LOGGED_IN] = isLoggedIn }

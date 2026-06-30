@@ -1,8 +1,8 @@
 package com.ktx.dormitory.core.network
 
 import com.ktx.dormitory.data.auth.local.TokenManager
-import com.ktx.dormitory.data.remote.api.AuthApiService
-import com.ktx.dormitory.data.remote.dto.auth.RefreshTokenRequest
+import com.ktx.dormitory.data.auth.remote.AuthApiService
+import com.ktx.dormitory.data.auth.dto.RefreshTokenRequest
 import com.ktx.dormitory.domain.auth.repository.AuthRepository
 import dagger.Lazy
 import kotlinx.coroutines.runBlocking

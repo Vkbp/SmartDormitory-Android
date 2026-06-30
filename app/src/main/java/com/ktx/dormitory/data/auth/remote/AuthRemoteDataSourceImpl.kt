@@ -1,7 +1,6 @@
 package com.ktx.dormitory.data.auth.remote
 
-import com.ktx.dormitory.data.remote.api.AuthApiService
-import com.ktx.dormitory.data.remote.dto.auth.*
+import com.ktx.dormitory.data.auth.dto.*
 import javax.inject.Inject
 import javax.inject.Singleton
 

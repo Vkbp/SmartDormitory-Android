@@ -1,6 +1,6 @@
 package com.ktx.dormitory.data.payment.repository
 
-import com.ktx.dormitory.data.local.dao.InvoiceDao
+import com.ktx.dormitory.data.payment.local.InvoiceDao
 import com.ktx.dormitory.data.payment.mapper.*
 import com.ktx.dormitory.data.payment.remote.PaymentRemoteDataSource
 import com.ktx.dormitory.domain.payment.model.*

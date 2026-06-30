@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ktx.dormitory.core.utils.DateTimeUtils
-import com.ktx.dormitory.domain.model.Transaction
+import com.ktx.dormitory.domain.payment.model.Transaction
 import com.ktx.dormitory.presentation.components.EmptyView
 import com.ktx.dormitory.presentation.components.ErrorView
 import com.ktx.dormitory.presentation.components.LoadingView

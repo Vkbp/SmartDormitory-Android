@@ -4,7 +4,7 @@ import com.ktx.dormitory.core.network.toUserFriendlyMessage
 import com.ktx.dormitory.data.auth.local.AuthLocalDataSource
 import com.ktx.dormitory.data.auth.mapper.toDomain
 import com.ktx.dormitory.data.auth.remote.AuthRemoteDataSource
-import com.ktx.dormitory.data.remote.dto.auth.*
+import com.ktx.dormitory.data.auth.dto.*
 import com.ktx.dormitory.domain.auth.model.UserData
 import com.ktx.dormitory.domain.auth.repository.AuthRepository
 import javax.inject.Inject

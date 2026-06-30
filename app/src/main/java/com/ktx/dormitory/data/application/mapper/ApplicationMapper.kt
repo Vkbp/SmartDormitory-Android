@@ -1,7 +1,7 @@
 package com.ktx.dormitory.data.application.mapper
 
-import com.ktx.dormitory.data.remote.dto.user.DormApplicationDto
-import com.ktx.dormitory.data.remote.dto.user.TimelineStepDto
+import com.ktx.dormitory.data.application.dto.DormApplicationDto
+import com.ktx.dormitory.data.application.dto.TimelineStepDto
 import com.ktx.dormitory.domain.application.model.*
 
 fun DormApplicationDto.toDomain(): DormApplication {

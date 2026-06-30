@@ -1,8 +1,8 @@
 package com.ktx.dormitory.data.payment.mapper
 
-import com.ktx.dormitory.data.local.entity.InvoiceEntity
-import com.ktx.dormitory.data.remote.dto.user.InvoiceDto
-import com.ktx.dormitory.data.remote.dto.user.TransactionDto
+import com.ktx.dormitory.data.payment.local.InvoiceEntity
+import com.ktx.dormitory.data.payment.dto.InvoiceDto
+import com.ktx.dormitory.data.payment.dto.TransactionDto
 import com.ktx.dormitory.domain.payment.model.*
 
 fun InvoiceDto.toDomain(): Invoice {

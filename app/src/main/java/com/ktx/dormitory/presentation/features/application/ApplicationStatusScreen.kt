@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.ktx.dormitory.core.utils.DateTimeUtils
-import com.ktx.dormitory.domain.model.AppStepStatus
-import com.ktx.dormitory.domain.model.TimelineStep
+import com.ktx.dormitory.domain.application.model.AppStepStatus
+import com.ktx.dormitory.domain.application.model.TimelineStep
 import com.ktx.dormitory.presentation.components.LoadingView
 import com.ktx.dormitory.presentation.components.ErrorView
 

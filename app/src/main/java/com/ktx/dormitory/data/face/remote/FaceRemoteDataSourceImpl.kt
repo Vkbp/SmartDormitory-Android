@@ -1,7 +1,6 @@
 package com.ktx.dormitory.data.face.remote
 
-import com.ktx.dormitory.data.remote.api.AccessApiService
-import com.ktx.dormitory.data.remote.dto.BaseResponse
+import com.ktx.dormitory.data.access.remote.AccessApiService
 import javax.inject.Inject
 
 /**
